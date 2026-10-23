@@ -1,0 +1,1660 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SMASH CBNU · 충북대 부수기</title>
+<meta name="description" content="충북대학교를 3D로 부수는 시험기간 스트레스 해소 게임 (비공식 팬 게임)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+:root{
+  --bg:rgba(15,17,23,.88); --line:rgba(255,255,255,.09); --txt:#eef0f4; --sub:#9aa1ad;
+  --acc:#e5383b; --acc2:#ffd166; --on:#2b1a1c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#0b0d12;color:var(--txt);
+  font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block;touch-action:none}
+.glass{background:var(--bg);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(8px)}
+button{font:inherit;color:inherit;cursor:pointer}
+
+#panel{position:fixed;left:12px;top:12px;width:236px;padding:10px;z-index:5;max-height:calc(100% - 60px);overflow:hidden auto}
+.brand{display:flex;align-items:baseline;gap:8px;padding:2px 4px 10px;white-space:nowrap}
+.brand b{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:21px;letter-spacing:.3px;color:#fff;flex:none}
+.brand b i{font-style:normal;color:var(--acc)}
+.brand span{font-size:11.5px;color:var(--sub);overflow:hidden;text-overflow:ellipsis}
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tool{position:relative;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:10px;padding:9px 4px 7px;text-align:center;transition:.12s}
+.tool:hover{background:rgba(255,255,255,.08)}
+.tool.on{background:var(--on);border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.tool svg{width:22px;height:22px;display:block;margin:0 auto 3px;stroke:#f3f4f6;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tool.on svg{stroke:var(--acc2)}
+.tool .n{font-weight:700;font-size:13px}
+.tool .d{font-size:10.5px;color:var(--sub);margin-top:1px}
+.tool kbd{position:absolute;right:5px;top:4px;font:10px ui-monospace,monospace;color:#6b7280}
+#opts{display:flex;gap:5px;margin-top:8px;align-items:center;min-height:30px}
+#opts .lab{font-size:11px;color:var(--sub);margin-right:2px;white-space:nowrap}
+.seg{flex:1;padding:6px 0;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.035);font-size:12px}
+.seg.on{border-color:var(--acc2);color:var(--acc2)}
+.row{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;margin-top:8px}
+.btn{padding:8px 4px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.035);font-size:12.5px;font-weight:600}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.08)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn small{display:block;font:10px ui-monospace,monospace;color:#6b7280;font-weight:400}
+.toggles{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tg{padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:transparent;font-size:12px}
+.tg.on{background:rgba(255,209,102,.12);border-color:rgba(255,209,102,.55);color:var(--acc2)}
+
+#hud{position:fixed;right:12px;top:12px;z-index:5;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+#scoreBox{padding:8px 12px}
+#scoreBox .k{font-size:11px;color:var(--sub);letter-spacing:2px}
+#score{font-family:"Black Han Sans",sans-serif;font-size:30px;line-height:1.05}
+#stat{padding:7px 12px;font-size:12px;line-height:1.55;color:#d6d9df}
+#stat b{color:var(--acc2)}
+#rank{min-width:140px;padding:6px 12px;display:none}
+#rank .l{font-family:"Black Han Sans",sans-serif;font-size:34px;line-height:1;color:var(--acc)}
+#rank .n{font-size:12px;color:#ddd}
+#rank .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:5px;overflow:hidden}
+#rank .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0}
+#depth{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);padding:6px 14px;font-size:12.5px;z-index:4;display:none;white-space:nowrap}
+#depth b{color:var(--acc2)}
+
+#banner{position:fixed;left:50%;top:16%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;text-align:center;
+  font-family:"Black Han Sans",sans-serif;font-size:clamp(26px,5vw,52px);color:#fff;text-shadow:0 3px 0 #000,0 0 24px rgba(229,56,59,.7);opacity:0;transition:opacity .25s,transform .25s}
+#banner.show{opacity:1;transform:translate(-50%,-50%) scale(1.04)}
+#banner small{display:block;font-family:Pretendard,sans-serif;font-weight:700;font-size:15px;color:var(--acc2);text-shadow:0 2px 6px #000}
+.pop{position:fixed;z-index:4;pointer-events:none;font-family:"Black Han Sans",sans-serif;font-size:20px;color:var(--acc2);
+  text-shadow:0 2px 0 #000;transform:translate(-50%,-50%);animation:pop 1.1s ease-out forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}15%{opacity:1;transform:translate(-50%,-60%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+
+#labels{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;font-size:11.5px;font-weight:600;color:#fff;background:rgba(10,12,18,.62);border:1px solid rgba(255,255,255,.12);
+  padding:2px 6px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);will-change:transform}
+#hint{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:4;padding:6px 12px;font-size:12px;color:#cfd3da;white-space:nowrap;pointer-events:none}
+#compass{position:fixed;right:14px;bottom:44px;z-index:5;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+#compass svg{width:26px;height:26px}
+footer{position:fixed;left:12px;bottom:10px;z-index:4;font-size:10.5px;color:#9aa1ad;padding:4px 9px;border-radius:7px;background:rgba(10,12,18,.6)}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:7}
+#reticle{position:fixed;left:0;top:0;width:28px;height:28px;margin:-14px 0 0 -14px;border:2px solid var(--acc2);border-radius:50%;pointer-events:none;z-index:3;display:none;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+#intro,#loading{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(20,22,30,.82),rgba(5,6,10,.96))}
+#intro .card{text-align:center;padding:30px 34px;max-width:420px}
+#intro h1{margin:0;font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:46px;letter-spacing:1px}
+#intro h1 i{font-style:normal;color:var(--acc)}
+#intro p{color:#cfd3da;line-height:1.6;font-size:14px}
+#intro .go{margin-top:10px;padding:12px 30px;border:0;border-radius:12px;background:var(--acc);color:#fff;font-weight:800;font-size:16px}
+#intro .keys{font-size:12px;color:var(--sub);margin-top:14px;line-height:1.7}
+#loading p{font-size:14px;color:#cfd3da}
+@media (max-width:700px){
+  #panel{width:200px;padding:8px;top:8px;left:8px}
+  .tool .d,.tool kbd{display:none}
+  .brand b{font-size:19px}
+  #hint,#depth{display:none !important}
+  footer{font-size:9px;right:60px}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script src="data.js"></script>
+</head>
+<body>
+<div id="stage"></div>
+<div id="labels"></div>
+<div id="reticle"></div>
+
+<div id="panel" class="glass">
+  <div class="brand"><b>SMASH <i>CBNU</i></b><span>충북대 부수기</span></div>
+  <div class="tools" id="tools">
+    <button class="tool" data-tool="bomb"><kbd>1</kbd><svg viewBox="0 0 24 24"><circle cx="10" cy="14" r="6.5"/><path d="M14.5 9.5 17 7M17 7l2.5-2.5M17 4v1.5M20 7h-1.5"/></svg><div class="n">폭탄</div><div class="d">넓게 날림</div></button>
+    <button class="tool" data-tool="bat"><kbd>2</kbd><svg viewBox="0 0 24 24"><path d="M4.5 19.5 16 8c1.6-1.6 3.6-2 4.4-1.2.8.8.4 2.8-1.2 4.4L7.7 22.7"/><path d="m3 18 3 3"/></svg><div class="n">배트</div><div class="d">멀리 날림</div></button>
+    <button class="tool" data-tool="laser"><kbd>3</kbd><svg viewBox="0 0 24 24"><path d="M12 2v14M8 6h8M9 21l3-5 3 5"/><path d="M5 21h14"/></svg><div class="n">레이저</div><div class="d">끌어서 자름</div></button>
+    <button class="tool" data-tool="meteor"><kbd>4</kbd><svg viewBox="0 0 24 24"><circle cx="15.5" cy="15.5" r="4.5"/><path d="M12 12 3 3M14 9.5 8 3.5M9.5 14 3.5 8"/></svg><div class="n">운석</div><div class="d">하늘에서</div></button>
+    <button class="tool" data-tool="quake"><kbd>5</kbd><svg viewBox="0 0 24 24"><path d="M2 13h4l2-6 3 12 3-14 2.5 8H22"/></svg><div class="n">지진</div><div class="d">땅이 흔들림</div></button>
+    <button class="tool" data-tool="nuke"><kbd>6</kbd><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M12 10.2 9 5a8 8 0 0 1 6 0zM13.6 12.9l3.1 5.1a8 8 0 0 0 3-5.2zM10.4 12.9l-3.1 5.1a8 8 0 0 1-3-5.2z"/></svg><div class="n">핵폭탄</div><div class="d">통째로</div></button>
+  </div>
+  <div id="opts"></div>
+  <div class="row">
+    <button class="btn" id="undo" disabled>되돌리기 <small>Ctrl Z</small></button>
+    <button class="btn" id="reset" disabled>전부 복구</button>
+    <button class="btn" id="shot">스크린샷</button>
+  </div>
+  <div class="toggles">
+    <button class="tg on" id="tLabels">이름 표시</button>
+    <button class="tg on" id="tSound">소리</button>
+    <button class="tg" id="tHome">처음 시점</button>
+    <button class="tg" id="tTop">위에서 보기</button>
+    <button class="tg" id="tNight">밤</button>
+  </div>
+</div>
+
+<div id="hud">
+  <div id="scoreBox" class="glass"><div class="k">SCORE</div><div id="score">0</div></div>
+  <div id="stat" class="glass">충북대 파괴율 <b id="pct">0.0%</b><br>무너뜨린 건물 <b id="fallen">0</b>동 · 최고 <b id="best">0</b></div>
+  <div id="rank" class="glass"><div class="l" id="rankL">D</div><div class="n" id="rankN"></div><div class="bar"><i id="rankBar"></i></div></div>
+</div>
+<div id="hint" class="glass"></div>
+<div id="depth" class="glass"></div>
+<div id="banner"></div>
+<button id="compass" class="glass" title="북쪽이 위로 (N)"><svg viewBox="0 0 24 24"><path d="M12 2 16 12H8z" fill="#e5383b"/><path d="M12 22 8 12h8z" fill="#cbd5e1"/></svg></button>
+<footer>건물·도로 © OpenStreetMap 기여자 · 고도 AWS Terrain Tiles(SRTM 기반) · 건물 겉모습은 실제 사진이 아닌 일반 재질 · 학교와 관계없는 비공식 팬 게임</footer>
+<div id="flash"></div>
+<div id="loading"><p id="loadMsg">충북대학교를 불러오는 중…</p></div>
+<div id="intro" style="display:none"><div class="card glass">
+  <h1>SMASH <i>CBNU</i></h1>
+  <p><b>충북대를 부셔</b> — 중간고사 스트레스 해소용<br>개신동 캠퍼스 건물 156동과 주변 건물을 3D로 부숴 보세요.</p>
+  <button class="go" id="go">부수러 가기</button>
+  <div class="keys">클릭: 도구 사용 · 드래그: 회전 · 우클릭 드래그: 이동 · 휠: 확대<br>1~6 도구 · Ctrl+Z 되돌리기 · N 북쪽 · H 처음 시점</div>
+</div></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Sky } from 'three/addons/objects/Sky.js';
+
+const D = window.CBNU;
+const $ = (id) => document.getElementById(id);
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const fmt = (n) => Math.round(n).toLocaleString('ko-KR');
+const tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3(), tmpQ = new THREE.Quaternion();
+const nextFrame = () => new Promise((r) => setTimeout(r, 30)); // lets the loading text paint (works in background tabs too)
+
+// ================================================================ terrain heights
+const T = D.terrain;
+const NX = T.nx, NZ = T.nz, STEP = T.step, TX0 = T.x0, TZ0 = T.z0;
+const TW = (NX - 1) * STEP, TH = (NZ - 1) * STEP, TX1 = TX0 + TW, TZ1 = TZ0 + TH;
+let minE = Infinity;
+for (const v of T.dm) minE = Math.min(minE, v / 10);
+const H0 = Float32Array.from(T.dm, (v) => v / 10 - minE);
+const H = H0.slice();
+const BASE = -28;
+function groundY(x, z) {
+  if (x < TX0 || x > TX1 || z < TZ0 || z > TZ1) return BASE;
+  const gx = (x - TX0) / STEP, gz = (z - TZ0) / STEP;
+  const j = Math.min(Math.floor(gx), NX - 2), i = Math.min(Math.floor(gz), NZ - 2);
+  const fx = gx - j, fz = gz - i, k = i * NX + j;
+  return lerp(lerp(H[k], H[k + 1], fx), lerp(H[k + NX], H[k + NX + 1], fx), fz);
+}
+// rubble heightfield: debris piles up so later pieces land on top
+const RS = 3, RNX = Math.ceil(TW / RS) + 1, RNZ = Math.ceil(TH / RS) + 1;
+const RUB = new Float32Array(RNX * RNZ);
+function rubIdx(x, z) {
+  const j = Math.floor((x - TX0) / RS), i = Math.floor((z - TZ0) / RS);
+  return i < 0 || j < 0 || i >= RNZ || j >= RNX ? -1 : i * RNX + j;
+}
+const landY = (x, z) => { const k = rubIdx(x, z); return groundY(x, z) + (k < 0 ? 0 : RUB[k]); };
+
+// ================================================================ renderer, sky, light
+const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 2, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.6;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+$('stage').appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 1, 14000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = 1.48; controls.minDistance = 25; controls.maxDistance = 3200;
+controls.screenSpacePanning = false; controls.zoomToCursor = true;
+
+const sky = new Sky(); sky.scale.setScalar(11000); scene.add(sky);
+const SU = sky.material.uniforms;
+const sunDir = new THREE.Vector3();
+const hemi = new THREE.HemisphereLight(0xdfe9ff, 0x6b5d48, 0.85); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0d8, 2.4);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -420, right: 420, top: 420, bottom: -420, near: 10, far: 3000 });
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.8;
+scene.add(sun, sun.target);
+const flashLight = new THREE.PointLight(0xffb060, 0, 300, 1.4); scene.add(flashLight);
+scene.fog = new THREE.Fog(0xc4d6e6, 2200, 7000);
+function setSun(elev, az) {
+  sunDir.setFromSphericalCoords(1, THREE.MathUtils.degToRad(90 - elev), THREE.MathUtils.degToRad(az));
+  SU.sunPosition.value.copy(sunDir);
+}
+
+// stars for night
+const stars = (() => {
+  const n = 1800, p = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const v = new THREE.Vector3().randomDirection(); v.y = Math.abs(v.y) * 0.9 + 0.05; v.normalize().multiplyScalar(5000);
+    p.set([v.x, v.y, v.z], i * 3);
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const s = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false, fog: false, transparent: true, opacity: .85 }));
+  s.visible = false; scene.add(s); return s;
+})();
+
+// ================================================================ ground painting
+const GS = 2048;
+const gcan = document.createElement('canvas'); gcan.width = gcan.height = GS;
+const g = gcan.getContext('2d');
+const PX = (x) => (x - TX0) / TW * GS, PZ = (z) => (z - TZ0) / TH * GS, M2P = GS / TW;
+function polyPath(rings) {
+  g.beginPath();
+  for (const r of rings) { r.forEach(([x, z], i) => i ? g.lineTo(PX(x), PZ(z)) : g.moveTo(PX(x), PZ(z))); g.closePath(); }
+}
+let groundBase = null;
+function paintGround() {
+  g.fillStyle = '#7b8b5c'; g.fillRect(0, 0, GS, GS);
+  // mottled grass
+  for (let i = 0; i < 9000; i++) {
+    g.fillStyle = `rgba(${Math.random() < .5 ? '40,60,25' : '160,170,110'},${rand(.04, .1)})`;
+    const r = rand(3, 16); g.beginPath(); g.arc(rand(0, GS), rand(0, GS), r, 0, 7); g.fill();
+  }
+  polyPath(D.campus); g.fillStyle = 'rgba(178,190,140,.28)'; g.fill();
+  const COL = { res: '#a7a294', farm: '#a8a56d', grass: '#8aa660', park: '#82a35a', wood: '#566f3e', pitch: '#5f9b4e', parking: '#8e8c86', water: '#5b88ad' };
+  for (const k of ['res', 'farm', 'grass', 'park', 'wood', 'pitch', 'parking', 'water']) {
+    for (const L of D.lands) if (L.k === k) { polyPath(L.r); g.fillStyle = COL[k]; g.fill('evenodd'); }
+  }
+  // pitch lines
+  g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1.2;
+  for (const L of D.lands) if (L.k === 'pitch') { polyPath(L.r); g.stroke(); }
+  // campus outline
+  polyPath(D.campus); g.strokeStyle = 'rgba(255,240,200,.25)'; g.lineWidth = 3; g.setLineDash([10, 8]); g.stroke(); g.setLineDash([]);
+  g.lineCap = g.lineJoin = 'round';
+  const foot = (k) => ['footway', 'path', 'cycleway', 'steps', 'pedestrian', 'track'].includes(k);
+  const line = (r) => { g.beginPath(); r.p.forEach(([x, z], i) => i ? g.lineTo(PX(x), PZ(z)) : g.moveTo(PX(x), PZ(z))); };
+  for (const r of D.roads) if (foot(r.k)) { line(r); g.strokeStyle = '#d3c9b1'; g.lineWidth = r.w * M2P; g.stroke(); }
+  for (const r of D.roads) if (!foot(r.k)) { line(r); g.strokeStyle = '#3d3f44'; g.lineWidth = r.w * M2P + 2; g.stroke(); }
+  for (const r of D.roads) if (!foot(r.k)) { line(r); g.strokeStyle = '#5b5e64'; g.lineWidth = r.w * M2P; g.stroke(); }
+  g.strokeStyle = 'rgba(255,220,120,.55)'; g.lineWidth = 1; g.setLineDash([6, 6]);
+  for (const r of D.roads) if (['primary', 'secondary', 'trunk'].includes(r.k)) { line(r); g.stroke(); }
+  g.setLineDash([]);
+  groundBase = g.getImageData(0, 0, GS, GS);
+}
+let groundOps = []; // scorch/crack paint ops, replayed on undo
+function paintOp(op) {
+  const x = PX(op.x), z = PZ(op.z), r = op.r * M2P;
+  if (op.t === 's') {
+    const gr = g.createRadialGradient(x, z, 0, x, z, r);
+    gr.addColorStop(0, `rgba(25,18,12,${op.a})`); gr.addColorStop(.55, `rgba(40,30,20,${op.a * .7})`); gr.addColorStop(1, 'rgba(40,30,20,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(x, z, r, 0, 7); g.fill();
+  } else if (op.t === 'c') {
+    g.strokeStyle = 'rgba(30,22,16,.85)'; g.lineCap = 'round';
+    for (const path of op.p) {
+      g.beginPath(); path.forEach(([a, b], i) => i ? g.lineTo(PX(a), PZ(b)) : g.moveTo(PX(a), PZ(b)));
+      g.lineWidth = op.w * M2P; g.stroke();
+    }
+  }
+}
+function addOp(op) { op.act = act; groundOps.push(op); paintOp(op); groundTex.needsUpdate = true; }
+function repaintGround() { g.putImageData(groundBase, 0, 0); for (const op of groundOps) paintOp(op); groundTex.needsUpdate = true; }
+
+// ================================================================ terrain mesh + skirt
+let groundTex, terrain, tPos;
+function buildTerrain() {
+  const geo = new THREE.BufferGeometry();
+  tPos = new Float32Array(NX * NZ * 3); const uv = new Float32Array(NX * NZ * 2);
+  for (let i = 0; i < NZ; i++) for (let j = 0; j < NX; j++) {
+    const k = i * NX + j;
+    tPos[k * 3] = TX0 + j * STEP; tPos[k * 3 + 1] = H[k]; tPos[k * 3 + 2] = TZ0 + i * STEP;
+    uv[k * 2] = j / (NX - 1); uv[k * 2 + 1] = 1 - i / (NZ - 1);
+  }
+  const idx = new Uint32Array((NX - 1) * (NZ - 1) * 6); let n = 0;
+  for (let i = 0; i < NZ - 1; i++) for (let j = 0; j < NX - 1; j++) {
+    const a = i * NX + j, b = a + 1, c = a + NX, d = c + 1;
+    idx[n++] = a; idx[n++] = c; idx[n++] = b; idx[n++] = b; idx[n++] = c; idx[n++] = d;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(tPos, 3));
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  geo.setIndex(new THREE.BufferAttribute(idx, 1));
+  geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(NX * NZ * 3), 3));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(TX0 + TW / 2, 0, TZ0 + TH / 2), Math.hypot(TW, TH) / 2 + 200);
+  terrainNormals(geo.attributes.normal.array, 0, NZ - 1, 0, NX - 1);
+  groundTex = new THREE.CanvasTexture(gcan);
+  groundTex.colorSpace = THREE.SRGBColorSpace;
+  groundTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: groundTex, roughness: 1, metalness: 0 }));
+  terrain.receiveShadow = true; scene.add(terrain);
+  // skirt: makes the map look like a cut-out block of land
+  const sk = [], push = (x, y, z) => sk.push(x, y, z);
+  const edge = (pts) => {
+    for (let q = 0; q < pts.length - 1; q++) {
+      const [x1, z1] = pts[q], [x2, z2] = pts[q + 1], y1 = groundY(x1, z1), y2 = groundY(x2, z2);
+      push(x1, y1, z1); push(x1, BASE, z1); push(x2, BASE, z2); push(x1, y1, z1); push(x2, BASE, z2); push(x2, y2, z2);
+    }
+  };
+  const along = (fixed, axis) => { const a = []; const n2 = axis === 'x' ? NX : NZ; for (let q = 0; q < n2; q++) a.push(axis === 'x' ? [TX0 + q * STEP, fixed] : [fixed, TZ0 + q * STEP]); return a; };
+  edge(along(TZ0, 'x')); edge(along(TZ1, 'x')); edge(along(TX0, 'z')); edge(along(TX1, 'z'));
+  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(sk, 3)); sg.computeVertexNormals();
+  const skirt = new THREE.Mesh(sg, new THREE.MeshStandardMaterial({ color: 0x5a4632, roughness: 1, side: THREE.DoubleSide }));
+  scene.add(skirt);
+  const bottom = new THREE.Mesh(new THREE.PlaneGeometry(TW, TH), new THREE.MeshStandardMaterial({ color: 0x3b2e22, side: THREE.DoubleSide }));
+  bottom.rotation.x = -Math.PI / 2; bottom.position.set(TX0 + TW / 2, BASE, TZ0 + TH / 2); scene.add(bottom);
+}
+function terrainNormals(nr, i0, i1, j0, j1) {
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+    const k = i * NX + j;
+    const hl = H[j > 0 ? k - 1 : k], hr = H[j < NX - 1 ? k + 1 : k], hu = H[i > 0 ? k - NX : k], hd = H[i < NZ - 1 ? k + NX : k];
+    const nx = hl - hr, ny = 2 * STEP, nz = hu - hd, l = Math.hypot(nx, ny, nz);
+    nr[k * 3] = nx / l; nr[k * 3 + 1] = ny / l; nr[k * 3 + 2] = nz / l;
+  }
+}
+// only the changed rectangle is recomputed (full recompute costs ~50 ms)
+function refreshTerrain(i0 = 0, i1 = NZ - 1, j0 = 0, j1 = NX - 1) {
+  i0 = Math.max(0, i0 - 1); i1 = Math.min(NZ - 1, i1 + 1); j0 = Math.max(0, j0 - 1); j1 = Math.min(NX - 1, j1 + 1);
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) { const k = i * NX + j; tPos[k * 3 + 1] = H[k]; }
+  const g2 = terrain.geometry;
+  terrainNormals(g2.attributes.normal.array, i0, i1, j0, j1);
+  g2.attributes.position.needsUpdate = true; g2.attributes.normal.needsUpdate = true;
+}
+let maxDepth = 0;
+function crater(x, z, R, depth) {
+  const j0 = Math.max(0, Math.floor((x - R * 1.35 - TX0) / STEP)), j1 = Math.min(NX - 1, Math.ceil((x + R * 1.35 - TX0) / STEP));
+  const i0 = Math.max(0, Math.floor((z - R * 1.35 - TZ0) / STEP)), i1 = Math.min(NZ - 1, Math.ceil((z + R * 1.35 - TZ0) / STEP));
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+    const k = i * NX + j, d = Math.hypot(TX0 + j * STEP - x, TZ0 + i * STEP - z) / R;
+    let dh = 0;
+    if (d < 1) dh = -depth * Math.pow(1 - d * d, 1.4);
+    else if (d < 1.35) dh = depth * 0.12 * Math.sin((d - 1) / 0.35 * Math.PI);
+    if (!dh) continue;
+    if (act && !act.terr.has(k)) act.terr.set(k, H[k]);
+    H[k] += dh;
+    maxDepth = Math.max(maxDepth, H0[k] - H[k]);
+  }
+  // rubble inside the crater is blown away
+  const r0 = rubIdx(x - R, z - R), cols = Math.ceil(2 * R / RS);
+  if (r0 >= 0) for (let a = 0; a <= cols; a++) for (let b = 0; b <= cols; b++) { const k = r0 + a * RNX + b; if (k < RUB.length) RUB[k] = 0; }
+  refreshTerrain(i0, i1, j0, j1); updateDepthHud();
+}
+function updateDepthHud() {
+  const el = $('depth');
+  if (maxDepth < 0.5) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = `가장 깊은 구덩이 <b>${maxDepth.toFixed(1)} m</b> · 지구 중심까지 <b>${(6371 - maxDepth / 1000).toLocaleString('ko-KR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} km</b> · 반대편은 ${D.config.antipode}`;
+}
+
+// ================================================================ trees (instanced)
+const TREES = D.trees, NT = TREES.length;
+const treeAlive = new Uint8Array(NT).fill(1);
+let crowns, trunks;
+const TG = 25, treeGrid = new Map();
+function buildTrees() {
+  crowns = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ roughness: .9, flatShading: true }), NT);
+  trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(.16, .26, 1, 5), new THREE.MeshStandardMaterial({ color: 0x5d4836, roughness: 1 }), NT);
+  crowns.castShadow = true; crowns.receiveShadow = true;
+  const c = new THREE.Color();
+  TREES.forEach((t, i) => {
+    c.setHSL(rand(.22, .3), rand(.35, .5), rand(.22, .32)); crowns.setColorAt(i, c);
+    setTree(i, true);
+    const key = Math.floor(t[0] / TG) + ',' + Math.floor(t[1] / TG);
+    (treeGrid.get(key) || treeGrid.set(key, []).get(key)).push(i);
+  });
+  scene.add(crowns, trunks);
+}
+const tm = new THREE.Matrix4(), tq = new THREE.Quaternion(), ts = new THREE.Vector3();
+function setTree(i, alive) {
+  const [x, z, s] = TREES[i], y = groundY(x, z);
+  treeAlive[i] = alive ? 1 : 0;
+  const k = alive ? 1 : 0;
+  ts.set(.9 * s * k, 2.6 * s * k, .9 * s * k); tm.compose(tmpV.set(x, y + 1.3 * s, z), tq.identity(), ts); trunks.setMatrixAt(i, tm);
+  ts.set(2.4 * s * k, 3.2 * s * k, 2.4 * s * k); tm.compose(tmpV.set(x, y + 4.3 * s, z), tq.setFromAxisAngle(tmpV2.set(0, 1, 0), i), ts); crowns.setMatrixAt(i, tm);
+  crowns.instanceMatrix.needsUpdate = trunks.instanceMatrix.needsUpdate = true;
+}
+function killTrees(x, z, R) {
+  const r = Math.ceil(R / TG);
+  const cx = Math.floor(x / TG), cz = Math.floor(z / TG);
+  for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) {
+    for (const i of treeGrid.get((cx + a) + ',' + (cz + b)) || []) {
+      if (!treeAlive[i]) continue;
+      const t = TREES[i];
+      if (Math.hypot(t[0] - x, t[1] - z) > R) continue;
+      setTree(i, false); act?.trees.push(i);
+      const y = groundY(t[0], t[1]) + 4;
+      for (let q = 0; q < 3; q++) smoke.emit(t[0], y, t[1], rand(-4, 4), rand(2, 7), rand(-4, 4), rand(1, 2), 2, 5, .25, .35, .15, .32, .45, .3, .7, 1.5, -3);
+    }
+  }
+}
+
+// ================================================================ building material (procedural facade)
+const U = { uNight: { value: 0 } };
+const bMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .86, metalness: 0 });
+bMat.onBeforeCompile = (sh) => {
+  sh.uniforms.uNight = U.uNight;
+  sh.vertexShader = sh.vertexShader
+    .replace('#include <common>', '#include <common>\nattribute vec3 rp;\nattribute float fl;\nvarying vec3 vRp;\nvarying float vF;\nvarying vec3 vN0;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRp = rp; vF = fl; vN0 = normal;');
+  sh.fragmentShader = sh.fragmentShader
+    .replace('#include <common>', `#include <common>
+uniform float uNight; varying vec3 vRp; varying float vF; varying vec3 vN0;
+float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }`)
+    .replace('#include <color_fragment>', `#include <color_fragment>
+vec3 n0 = normalize(vN0);
+float wall = 1.0 - smoothstep(0.35, 0.65, abs(n0.y));
+vec2 tg = normalize(vec2(-n0.z, n0.x) + 1e-5);
+float along = dot(vRp.xz, tg);
+vec2 cell = vec2(along / 3.3, vRp.y / 3.7);
+vec2 fr = fract(cell);
+float win = step(.24, fr.x) * step(fr.x, .76) * step(.36, fr.y) * step(fr.y, .82) * wall * step(.5, vF);
+float bandG = smoothstep(.0, .06, fr.y) * (1.0 - smoothstep(.94, 1.0, fr.y));
+vec3 base = diffuseColor.rgb * mix(.82, 1.0, bandG);
+vec3 concrete = vec3(.47, .45, .42) * (.8 + .25 * h21(floor(vRp.xz * 1.7 + vRp.y)));
+base = mix(concrete, base, step(.5, vF));
+base *= mix(.84, 1.0, wall);
+float lit = step(.5, h21(floor(cell) + floor(vRp.xz / 60.0)));
+diffuseColor.rgb = mix(base, vec3(.26, .32, .4) + .1 * h21(floor(cell)), win * .85);`)
+    .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+totalEmissiveRadiance += vec3(1.0, .76, .42) * win * lit * uNight * 1.25;`);
+};
+
+// ================================================================ buildings
+const PAL_C = ['#b4614b', '#c4826a', '#d8ccb3', '#bdbbb3', '#e0d9cb', '#9f5a47', '#c9b79a', '#a9aba6'];
+const PAL_O = ['#d8d3c6', '#c8c2b4', '#b7b3a9', '#e5e0d4', '#a8a49a', '#cfc6b6'];
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function ringArea(r) { let a = 0; for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length]; a += p[0] * q[1] - q[0] * p[1]; } return a / 2; }
+function pip(pt, r) {
+  let c = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const [xi, zi] = r[i], [xj, zj] = r[j];
+    if ((zi > pt[1]) !== (zj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - zi) / (zj - zi) + xi) c = !c;
+  }
+  return c;
+}
+const B = [];
+const BG = 40, bGrid = new Map();
+let campusVol = 0, fallen = 0;
+const pickables = [];
+function makeGeo(pos, nor, rp, fl, col) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  geo.setAttribute('rp', new THREE.BufferAttribute(rp, 3));
+  geo.setAttribute('fl', new THREE.BufferAttribute(fl, 1));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.computeBoundingSphere();
+  return geo;
+}
+function extrude(ring, holes, y0, y1) {
+  const sh = new THREE.Shape(ring.map(([x, z]) => new THREE.Vector2(x, -z)));
+  for (const h of holes) sh.holes.push(new THREE.Path(h.map(([x, z]) => new THREE.Vector2(x, -z))));
+  const geo = new THREE.ExtrudeGeometry(sh, { depth: Math.max(.3, y1 - y0), bevelEnabled: false, steps: 1, curveSegments: 1 });
+  geo.rotateX(-Math.PI / 2); geo.translate(0, y0, 0);
+  const pos = Float32Array.from(geo.attributes.position.array), nor = Float32Array.from(geo.attributes.normal.array);
+  geo.dispose();
+  return { pos, nor };
+}
+function fillColor(n, c) { const a = new Float32Array(n * 3); for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; } return a; }
+function setMesh(b, geo) {
+  if (b.mesh) { b.mesh.geometry.dispose(); if (geo) { b.mesh.geometry = geo; return; } scene.remove(b.mesh); pickables.splice(pickables.indexOf(b.mesh), 1); b.mesh = null; return; }
+  if (!geo) return;
+  const m = new THREE.Mesh(geo, bMat); m.castShadow = m.receiveShadow = true; m.userData.b = b;
+  b.mesh = m; scene.add(m); pickables.push(m);
+}
+function wholeMesh(b) {
+  let raw;
+  try { raw = extrude(b.ring, b.holes, b.base, b.top); } catch { raw = extrude(b.ring, [], b.base, b.top); }
+  const n = raw.pos.length / 3;
+  setMesh(b, n ? makeGeo(raw.pos, raw.nor, raw.pos.slice(), new Float32Array(n).fill(1), fillColor(n, b.color)) : null);
+}
+function buildBuildings() {
+  D.buildings.forEach((s, id) => {
+    const ring = s.o; let gmin = Infinity, gsum = 0, x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    for (const [x, z] of ring) { const gy = groundY(x, z); gmin = Math.min(gmin, gy); gsum += gy; x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+    const base = gmin - 1.2, top = gsum / ring.length + s.h, area = Math.abs(ringArea(ring));
+    const h = hashStr(s.n || String(id));
+    const pal = s.c ? PAL_C : PAL_O;
+    const b = {
+      id, name: s.n || null, campus: !!s.c, ring, holes: s.i || [], base, top, area, vol: area * (top - base),
+      color: new THREE.Color(pal[h % pal.length]).convertSRGBToLinear(), x0, x1, z0, z1, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2,
+      pieces: null, at: null, mesh: null, lost: 0, down: false, dirty: false, sup: false,
+    };
+    b.short = b.name ? b.name.replace(/\s*\(?[A-Z]\d+(-\d+)?\)?\s*$/, '').trim() || b.name : null;
+    if (b.campus) campusVol += b.vol;
+    B.push(b); wholeMesh(b);
+    for (let a = Math.floor(x0 / BG); a <= Math.floor(x1 / BG); a++) for (let c = Math.floor(z0 / BG); c <= Math.floor(z1 / BG); c++) {
+      const k = a + ',' + c; (bGrid.get(k) || bGrid.set(k, []).get(k)).push(b);
+    }
+  });
+}
+function buildingsNear(x, z, R) {
+  const out = new Set();
+  for (let a = Math.floor((x - R) / BG); a <= Math.floor((x + R) / BG); a++)
+    for (let c = Math.floor((z - R) / BG); c <= Math.floor((z + R) / BG); c++)
+      for (const b of bGrid.get(a + ',' + c) || []) if (b.x1 > x - R && b.x0 < x + R && b.z1 > z - R && b.z0 < z + R) out.add(b);
+  return out;
+}
+
+// ---------------------------------------------------------------- chunkify: split a building into floor slabs x grid cells
+function clipAxis(poly, ax, c, keepGreater) {
+  const out = [], n = poly.length;
+  for (let i = 0; i < n; i++) {
+    const A = poly[i], Q = poly[(i + 1) % n];
+    const da = keepGreater ? A[ax] - c : c - A[ax], db = keepGreater ? Q[ax] - c : c - Q[ax];
+    if (da >= 0) out.push(A);
+    if ((da >= 0) !== (db >= 0)) { const t = da / (da - db); out.push([A[0] + (Q[0] - A[0]) * t, A[1] + (Q[1] - A[1]) * t]); }
+  }
+  return out.filter((p, i, a) => { const q = a[(i + a.length - 1) % a.length]; return a.length < 2 || Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]) > 0.05; });
+}
+const STATIC = 0, DYN = 1, RUBBLE = 2, GONE = 3;
+function chunkify(b) {
+  if (b.pieces) return;
+  let best = 0, ang = 0;
+  for (let i = 0; i < b.ring.length; i++) {
+    const p = b.ring[i], q = b.ring[(i + 1) % b.ring.length], L = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    if (L > best) { best = L; ang = Math.atan2(q[1] - p[1], q[0] - p[0]); }
+  }
+  const ca = Math.cos(ang), sa = Math.sin(ang);
+  const toL = ([x, z]) => [x * ca + z * sa, -x * sa + z * ca];
+  const toW = ([u, v]) => [u * ca - v * sa, u * sa + v * ca];
+  const L = b.ring.map(toL), LH = b.holes.map((h) => h.map(toL));
+  let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+  for (const [u, v] of L) { u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v); }
+  const ht = b.top - b.base;
+  const cell = clamp(Math.sqrt(b.area) / 4, 4.5, 9);
+  let nu = Math.max(1, Math.round((u1 - u0) / cell)), nv = Math.max(1, Math.round((v1 - v0) / cell));
+  let ns = clamp(Math.round(ht / 3.8), 1, 14);
+  while (nu * nv * ns > 220) { if (ns > 3 && ns >= Math.max(nu, nv)) ns--; else if (nu >= nv) nu--; else nv--; }
+  const du = (u1 - u0) / nu, dv = (v1 - v0) / nv, sh = ht / ns;
+  b.grid = { nu, nv, ns, ca, sa, u0, v0, du, dv, sh }; b.pieces = []; b.at = new Array(nu * nv * ns).fill(null);
+  for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) {
+    const ua = u0 + i * du, ub = ua + du, va = v0 + j * dv, vb = va + dv;
+    let poly = L;
+    if (i > 0) poly = clipAxis(poly, 0, ua, true);
+    if (i < nu - 1 && poly.length) poly = clipAxis(poly, 0, ub, false);
+    if (j > 0 && poly.length) poly = clipAxis(poly, 1, va, true);
+    if (j < nv - 1 && poly.length) poly = clipAxis(poly, 1, vb, false);
+    if (poly.length < 3) continue;
+    const a = Math.abs(ringArea(poly)); if (a < 0.6) continue;
+    let mu = 0, mv = 0; for (const [u, v] of poly) { mu += u; mv += v; } mu /= poly.length; mv /= poly.length;
+    if (LH.some((h) => pip([mu, mv], h))) continue;
+    const world = poly.map(toW);
+    const cut = { u0: i > 0 ? ua : null, u1: i < nu - 1 ? ub : null, v0: j > 0 ? va : null, v1: j < nv - 1 ? vb : null };
+    for (let k = 0; k < ns; k++) {
+      const p = makePiece(b, world, b.base + k * sh, b.base + (k + 1) * sh, a, cut, toL, k > 0, k < ns - 1);
+      if (!p) continue;
+      p.i = i; p.j = j; p.k = k; b.at[(i * nv + j) * ns + k] = p; b.pieces.push(p);
+    }
+  }
+  if (!b.pieces.length) { // fallback: whole building is one piece
+    b.grid = { nu: 1, nv: 1, ns: 1, ca, sa, u0, v0, du: u1 - u0, dv: v1 - v0, sh: ht }; b.at = [null];
+    const p = makePiece(b, b.ring, b.base, b.top, b.area, {}, toL, false, false);
+    if (p) { p.i = p.j = p.k = 0; b.at[0] = p; b.pieces.push(p); }
+  }
+  b.dirty = true;
+}
+function makePiece(b, world, y0, y1, a, cut, toL, botInner, topInner) {
+  let raw;
+  try { raw = extrude(world, [], y0, y1); } catch { return null; }
+  const n = raw.pos.length / 3; if (!n) return null;
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (let q = 0; q < n; q++) { const x = raw.pos[q * 3], z = raw.pos[q * 3 + 2]; x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+  const fl = new Float32Array(n);
+  for (let t = 0; t < n; t += 3) {
+    const ny = raw.nor[t * 3 + 1]; let f = 1;
+    if (ny > .5) f = topInner ? 0 : 1;
+    else if (ny < -.5) f = botInner ? 0 : 1;
+    else {
+      const cx = (raw.pos[t * 3] + raw.pos[t * 3 + 3] + raw.pos[t * 3 + 6]) / 3, cz = (raw.pos[t * 3 + 2] + raw.pos[t * 3 + 5] + raw.pos[t * 3 + 8]) / 3;
+      const [u, v] = toL([cx, cz]), e = .08;
+      if ((cut.u0 != null && Math.abs(u - cut.u0) < e) || (cut.u1 != null && Math.abs(u - cut.u1) < e) ||
+          (cut.v0 != null && Math.abs(v - cut.v0) < e) || (cut.v1 != null && Math.abs(v - cut.v1) < e)) f = 0;
+    }
+    fl[t] = fl[t + 1] = fl[t + 2] = f;
+  }
+  const c = new THREE.Vector3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+  return {
+    b, rp: raw.pos, nor: raw.nor, fl, n, c, x0, x1, z0, z1, y0, y1, vol: a * (y1 - y0),
+    hr: .5 * Math.min(x1 - x0, z1 - z0, y1 - y0), state: STATIC, geo: null, mesh: null, batch: null, act: null,
+    pos: new THREE.Vector3(), q: new THREE.Quaternion(), vel: new THREE.Vector3(), ang: new THREE.Vector3(), rest: 0,
+  };
+}
+function rebuildStatic(b) {
+  b.dirty = false;
+  if (!b.pieces) { wholeMesh(b); return; }
+  let n = 0; for (const p of b.pieces) if (p.state === STATIC) n += p.n;
+  if (!n) { setMesh(b, null); return; }
+  const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), fl = new Float32Array(n);
+  let o = 0;
+  for (const p of b.pieces) if (p.state === STATIC) { pos.set(p.rp, o * 3); nor.set(p.nor, o * 3); fl.set(p.fl, o); o += p.n; }
+  setMesh(b, makeGeo(pos, nor, pos.slice(), fl, fillColor(n, b.color)));
+}
+function pieceGeo(p) {
+  if (p.geo) return p.geo;
+  const pos = new Float32Array(p.n * 3);
+  for (let q = 0; q < p.n; q++) { pos[q * 3] = p.rp[q * 3] - p.c.x; pos[q * 3 + 1] = p.rp[q * 3 + 1] - p.c.y; pos[q * 3 + 2] = p.rp[q * 3 + 2] - p.c.z; }
+  return (p.geo = makeGeo(pos, p.nor, p.rp, p.fl, fillColor(p.n, p.b.color)));
+}
+
+// ---------------------------------------------------------------- support: unsupported slabs fall
+function computeSupport(b) {
+  b.sup = false;
+  if (!b.pieces) return;
+  const { nu, nv, ns } = b.grid, at = b.at, S = new Uint8Array(at.length);
+  const st = (i, j, k) => { if (i < 0 || j < 0 || i >= nu || j >= nv) return null; const p = at[(i * nv + j) * ns + k]; return p && p.state === STATIC ? p : null; };
+  for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) for (let k = 0; k < ns; k++) { if (!st(i, j, k)) break; S[(i * nv + j) * ns + k] = 1; }
+  // cantilever: a slab may hang off a supported neighbour up to 2 cells away
+  for (let k = 1; k < ns; k++) for (let pass = 0; pass < 2; pass++) {
+    const add = [];
+    for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) {
+      const id = (i * nv + j) * ns + k; if (S[id] || !st(i, j, k)) continue;
+      for (const [a, c] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ii = i + a, jj = j + c; if (ii >= 0 && jj >= 0 && ii < nu && jj < nv && S[(ii * nv + jj) * ns + k] === 1 + pass * 0) { add.push(id); break; } }
+    }
+    for (const id of add) S[id] = 1;
+  }
+  let fell = 0;
+  for (const p of b.pieces) if (p.state === STATIC && !S[(p.i * b.grid.nv + p.j) * ns + p.k]) {
+    detach(p, rand(-1.5, 1.5), rand(-2, 0), rand(-1.5, 1.5), .6); fell++;
+  }
+  if (fell > 6) { crumbleSound(fell); dustAt(b.cx, groundY(b.cx, b.cz) + 2, b.cz, Math.sqrt(b.area) * .7, Math.min(40, fell)); }
+}
+
+// ---------------------------------------------------------------- dynamic pieces
+const dyn = [], sleepers = [], batches = [];
+const DYN_MAX = 520;
+function detach(p, vx, vy, vz, spin = 1, vaporize = false) {
+  if (p.state !== STATIC) return;
+  const b = p.b;
+  p.act = act; act?.pieces.push(p);
+  b.dirty = true; b.sup = true;
+  b.lost += p.vol;
+  scorePieces(p.vol, b);
+  if (vaporize || dyn.length >= DYN_MAX) {
+    p.state = GONE;
+    if (Math.random() < .25) smoke.emit(p.c.x, p.c.y, p.c.z, vx * .1, 2, vz * .1, rand(1.5, 3), p.hr * 2, p.hr * 6, .3, .28, .25, .55, .52, .48, .5, 1, 1);
+    return;
+  }
+  p.state = DYN;
+  p.pos.copy(p.c); p.q.identity(); p.vel.set(vx, vy, vz);
+  p.ang.set(rand(-1, 1), rand(-1, 1), rand(-1, 1)).multiplyScalar(spin * rand(.5, 2.5));
+  p.rest = 0; p.age = 0;
+  const m = new THREE.Mesh(pieceGeo(p), bMat);
+  m.position.copy(p.pos); m.castShadow = dyn.length < 140; m.receiveShadow = true;
+  p.mesh = m; scene.add(m); dyn.push(p);
+}
+// a fast piece that runs into another building knocks pieces loose
+function staticAt(x, y, z) {
+  for (const b of bGrid.get(Math.floor(x / BG) + ',' + Math.floor(z / BG)) || []) {
+    if (x < b.x0 || x > b.x1 || z < b.z0 || z > b.z1 || y > b.top || y < b.base) continue;
+    if (!b.pieces) { if (pip([x, z], b.ring)) return { b, p: null, top: b.top }; continue; }
+    const gr = b.grid, u = x * gr.ca + z * gr.sa, v = -x * gr.sa + z * gr.ca;
+    const i = Math.floor((u - gr.u0) / gr.du), j = Math.floor((v - gr.v0) / gr.dv), k = Math.floor((y - b.base) / gr.sh);
+    if (i < 0 || j < 0 || k < 0 || i >= gr.nu || j >= gr.nv || k >= gr.ns) continue;
+    const p = b.at[(i * gr.nv + j) * gr.ns + k];
+    if (p && p.state === STATIC) return { b, p, top: p.y1 };
+  }
+  return null;
+}
+const G = 22, wq = new THREE.Quaternion(), wv = new THREE.Vector3();
+let landSoundT = 0;
+function stepPieces(dt) {
+  for (let n = dyn.length - 1; n >= 0; n--) {
+    const p = dyn[n];
+    p.age += dt;
+    p.vel.y -= G * dt;
+    const drag = 1 - .06 * dt; p.vel.multiplyScalar(drag);
+    p.pos.addScaledVector(p.vel, dt);
+    const w = p.ang.length();
+    if (w > 1e-4) { wq.setFromAxisAngle(wv.copy(p.ang).divideScalar(w), w * dt); p.q.premultiply(wq); }
+    const { x, z } = p.pos, sp = p.vel.length();
+    if (x < TX0 - 500 || x > TX1 + 500 || z < TZ0 - 500 || z > TZ1 + 500 || p.pos.y < BASE - 400) { removeDyn(p, n, GONE); continue; }
+    p.landed = false;
+    // hit another building? (own building only after it has fallen clear of its neighbours)
+    if (sp > 9 && p.age > .12) {
+      const h = staticAt(x, p.pos.y, z);
+      if (h && (h.b !== p.b || p.age > .45)) {
+        if (!h.p) { chunkify(h.b); }
+        else {
+          detach(h.p, p.vel.x * .55 + rand(-3, 3), p.vel.y * .4 + rand(0, 4), p.vel.z * .55 + rand(-3, 3), 1.2);
+          p.vel.multiplyScalar(.45);
+          if (sp > 25) dustAt(x, p.pos.y, z, 3, 3);
+        }
+      } else if (h && h.p && p.vel.y < 0 && p.pos.y - p.hr < h.top && p.pos.y > h.top - 2.5) landOn(p, h.top, sp);
+    } else if (p.vel.y < 0) {
+      const h = staticAt(x, p.pos.y - p.hr, z);
+      if (h && (h.b !== p.b || p.age > .3) && p.pos.y > h.top - 2.5) landOn(p, h.top, sp);
+    }
+    const ly = landY(x, z);
+    if (p.pos.y - p.hr < ly) landOn(p, ly, sp);
+    p.mesh.position.copy(p.pos); p.mesh.quaternion.copy(p.q);
+    if (sp < 1.2 && p.landed) { p.rest += dt; if (p.rest > .35) sleep(p, n, p.pos.y - p.hr <= ly + .8); }
+    else p.rest = 0;
+  }
+}
+function landOn(p, y, sp) {
+  p.pos.y = y + p.hr; p.landed = true;
+  if (p.vel.y < 0) p.vel.y = -p.vel.y * .22;
+  p.vel.x *= .55; p.vel.z *= .55; p.ang.multiplyScalar(.55);
+  if (sp > 8 && Math.random() < .3) dustAt(p.pos.x, y + 1, p.pos.z, p.hr * 1.5, 2);
+  if (sp > 10 && performance.now() - landSoundT > 70) { landSoundT = performance.now(); thud(clamp(p.vol / 400, .15, 1)); }
+}
+function removeDyn(p, n, state) {
+  dyn.splice(n, 1);
+  if (p.mesh) { scene.remove(p.mesh); p.mesh = null; }
+  p.state = state;
+}
+function sleep(p, n, onGround) {
+  dyn.splice(n, 1); p.state = RUBBLE; p.vel.set(0, 0, 0);
+  sleepers.push(p); p.onGround = onGround;
+  if (!onGround) return; // resting on a roof: don't raise the ground pile
+  // raise the rubble pile under it
+  const top = p.pos.y + p.hr * .6;
+  for (let x = p.pos.x - p.hr * 1.2; x <= p.pos.x + p.hr * 1.2; x += RS) for (let z = p.pos.z - p.hr * 1.2; z <= p.pos.z + p.hr * 1.2; z += RS) {
+    const k = rubIdx(x, z); if (k >= 0) RUB[k] = Math.max(RUB[k], Math.min(top - groundY(x, z), 25));
+  }
+}
+const bakeM = new THREE.Matrix4(), bakeN = new THREE.Matrix3();
+function bakeBatch(pieces) {
+  let n = 0; for (const p of pieces) n += p.n;
+  if (!n) return null;
+  const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), rp = new Float32Array(n * 3), fl = new Float32Array(n), col = new Float32Array(n * 3);
+  let o = 0;
+  for (const p of pieces) {
+    bakeM.compose(p.pos, p.q, tmpV2.set(1, 1, 1)); bakeN.getNormalMatrix(bakeM);
+    const lp = pieceGeo(p).attributes.position.array, e = bakeM.elements, f = bakeN.elements;
+    for (let q = 0; q < p.n; q++) {
+      const x = lp[q * 3], y = lp[q * 3 + 1], z = lp[q * 3 + 2], w = (o + q) * 3;
+      pos[w] = e[0] * x + e[4] * y + e[8] * z + e[12]; pos[w + 1] = e[1] * x + e[5] * y + e[9] * z + e[13]; pos[w + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+      const nx = p.nor[q * 3], ny = p.nor[q * 3 + 1], nz = p.nor[q * 3 + 2];
+      nor[w] = f[0] * nx + f[3] * ny + f[6] * nz; nor[w + 1] = f[1] * nx + f[4] * ny + f[7] * nz; nor[w + 2] = f[2] * nx + f[5] * ny + f[8] * nz;
+    }
+    rp.set(p.rp, o * 3); fl.set(p.fl, o);
+    const c = p.b.color; for (let q = 0; q < p.n; q++) { col[(o + q) * 3] = c.r * .9; col[(o + q) * 3 + 1] = c.g * .9; col[(o + q) * 3 + 2] = c.b * .9; }
+    o += p.n;
+  }
+  // rubble keeps its shading pattern (rp) but normals are rotated: use world normal for walls, so pass rotated normal as attribute
+  const m = new THREE.Mesh(makeGeo(pos, nor, rp, fl, col), bMat);
+  m.receiveShadow = true; m.castShadow = true;
+  return m;
+}
+let mergeT = 0;
+function mergeSleepers(force) {
+  if (!sleepers.length || (!force && sleepers.length < 12 && mergeT < 1.5)) return;
+  mergeT = 0;
+  const pieces = sleepers.splice(0);
+  const batch = { pieces, mesh: bakeBatch(pieces) };
+  for (const p of pieces) { if (p.mesh) { scene.remove(p.mesh); p.mesh = null; } p.batch = batch; }
+  if (batch.mesh) { scene.add(batch.mesh); batches.push(batch); }
+}
+function rebuildBatch(batch) {
+  if (batch.mesh) { scene.remove(batch.mesh); batch.mesh.geometry.dispose(); }
+  batch.pieces = batch.pieces.filter((p) => p.state === RUBBLE && p.batch === batch);
+  batch.mesh = batch.pieces.length ? bakeBatch(batch.pieces) : null;
+  if (batch.mesh) scene.add(batch.mesh); else batches.splice(batches.indexOf(batch), 1);
+}
+
+// ================================================================ particles
+class Particles {
+  constructor(max, additive) {
+    this.max = max; this.n = 0;
+    this.P = new Float32Array(max * 3); this.V = new Float32Array(max * 3);
+    this.L = new Float32Array(max * 2); this.S = new Float32Array(max * 2); this.C = new Float32Array(max * 6);
+    this.F = new Float32Array(max * 3); // alpha, drag, buoyancy
+    this.geo = new THREE.BufferGeometry();
+    this.aPos = new THREE.BufferAttribute(new Float32Array(max * 3), 3).setUsage(THREE.DynamicDrawUsage);
+    this.aCol = new THREE.BufferAttribute(new Float32Array(max * 4), 4).setUsage(THREE.DynamicDrawUsage);
+    this.aSize = new THREE.BufferAttribute(new Float32Array(max), 1).setUsage(THREE.DynamicDrawUsage);
+    this.geo.setAttribute('position', this.aPos); this.geo.setAttribute('aCol', this.aCol); this.geo.setAttribute('aSize', this.aSize);
+    this.mat = new THREE.ShaderMaterial({
+      uniforms: { uScale: { value: 1 } }, transparent: true, depthWrite: false,
+      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      vertexShader: `attribute vec4 aCol; attribute float aSize; uniform float uScale; varying vec4 vC;
+        void main(){ vC = aCol; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = min(aSize * uScale / -mv.z, 900.0); gl_Position = projectionMatrix * mv; }`,
+      fragmentShader: `varying vec4 vC; void main(){ float r = length(gl_PointCoord - .5) * 2.0; float a = smoothstep(1.0, .0, r); a *= a; if (vC.a * a < .004) discard; gl_FragColor = vec4(vC.rgb, vC.a * a); }`,
+    });
+    this.pts = new THREE.Points(this.geo, this.mat); this.pts.frustumCulled = false; this.pts.renderOrder = additive ? 3 : 2;
+    scene.add(this.pts);
+  }
+  emit(x, y, z, vx, vy, vz, life, s0, s1, r0, g0, b0, r1, g1, b1, a, drag, buoy) {
+    let i = this.n < this.max ? this.n++ : Math.floor(Math.random() * this.max);
+    this.P.set([x, y, z], i * 3); this.V.set([vx, vy, vz], i * 3); this.L.set([life, life], i * 2);
+    this.S.set([s0, s1], i * 2); this.C.set([r0, g0, b0, r1, g1, b1], i * 6); this.F.set([a, drag, buoy], i * 3);
+  }
+  update(dt) {
+    const { P, V, L, S, C, F } = this; const ap = this.aPos.array, ac = this.aCol.array, as = this.aSize.array;
+    for (let i = 0; i < this.n; i++) {
+      L[i * 2] -= dt;
+      if (L[i * 2] <= 0) { // swap-remove
+        const j = --this.n;
+        if (i !== j) { P.copyWithin(i * 3, j * 3, j * 3 + 3); V.copyWithin(i * 3, j * 3, j * 3 + 3); L.copyWithin(i * 2, j * 2, j * 2 + 2); S.copyWithin(i * 2, j * 2, j * 2 + 2); C.copyWithin(i * 6, j * 6, j * 6 + 6); F.copyWithin(i * 3, j * 3, j * 3 + 3); }
+        i--; continue;
+      }
+      const t = 1 - L[i * 2] / L[i * 2 + 1], k = Math.max(0, 1 - F[i * 3 + 1] * dt);
+      V[i * 3] *= k; V[i * 3 + 1] = V[i * 3 + 1] * k + F[i * 3 + 2] * dt; V[i * 3 + 2] *= k;
+      P[i * 3] += V[i * 3] * dt; P[i * 3 + 1] += V[i * 3 + 1] * dt; P[i * 3 + 2] += V[i * 3 + 2] * dt;
+      ap[i * 3] = P[i * 3]; ap[i * 3 + 1] = P[i * 3 + 1]; ap[i * 3 + 2] = P[i * 3 + 2];
+      ac[i * 4] = lerp(C[i * 6], C[i * 6 + 3], t); ac[i * 4 + 1] = lerp(C[i * 6 + 1], C[i * 6 + 4], t); ac[i * 4 + 2] = lerp(C[i * 6 + 2], C[i * 6 + 5], t);
+      ac[i * 4 + 3] = F[i * 3] * Math.min(1, t * 8) * Math.pow(1 - t, 1.3);
+      as[i] = lerp(S[i * 2], S[i * 2 + 1], Math.sqrt(t));
+    }
+    this.geo.setDrawRange(0, this.n);
+    this.aPos.needsUpdate = this.aCol.needsUpdate = this.aSize.needsUpdate = true;
+  }
+}
+const fire = new Particles(6000, true), smoke = new Particles(9000, false);
+function dustAt(x, y, z, R, n) {
+  for (let i = 0; i < n; i++) smoke.emit(x + rand(-R, R), y + rand(0, R * .4), z + rand(-R, R), rand(-3, 3), rand(1, 4), rand(-3, 3), rand(1.5, 3.5), R * .8, R * 2.4, .42, .39, .34, .62, .6, .56, .55, 1.2, .5);
+}
+function fireball(p, R, opts = {}) {
+  const n = clamp(Math.round(R * 7), 40, 650);
+  for (let i = 0; i < n; i++) {
+    tmpV.randomDirection(); tmpV.y = Math.abs(tmpV.y) * 1.2;
+    const s = rand(.25, 1) * R * 2.2;
+    fire.emit(p.x + tmpV.x * R * .2, p.y + tmpV.y * R * .15, p.z + tmpV.z * R * .2, tmpV.x * s, tmpV.y * s, tmpV.z * s, rand(.35, .9),
+      R * .45, R * 1.1, 1, .92, .65, .95, .28, .05, 1, 3.2, R * .4);
+  }
+  for (let i = 0; i < n * .5; i++) {
+    tmpV.randomDirection(); tmpV.y = Math.abs(tmpV.y);
+    const s = rand(.2, 1) * R * .9;
+    smoke.emit(p.x + tmpV.x * R * .4, p.y + tmpV.y * R * .3, p.z + tmpV.z * R * .4, tmpV.x * s, tmpV.y * s + R * .25, tmpV.z * s, rand(1.8, 3.8),
+      R * .5, R * 1.45, .26, .24, .22, .62, .6, .57, .42, .9, opts.buoy ?? 2.5);
+  }
+  for (let i = 0; i < n * .4; i++) { // sparks with gravity
+    tmpV.randomDirection(); tmpV.y = Math.abs(tmpV.y) + .3;
+    const s = rand(.6, 1.6) * R * 2;
+    fire.emit(p.x, p.y + 1, p.z, tmpV.x * s, tmpV.y * s, tmpV.z * s, rand(.6, 1.4), 1.2, .6, 1, .8, .4, 1, .3, .05, 1, .8, -30);
+  }
+  flashLight.position.set(p.x, p.y + R * .6, p.z);
+  flashLight.distance = R * 9; flashLight.intensity = Math.max(flashLight.intensity, R * R * 60);
+  shockRing(p, R * 2.2, .55);
+  flashBall(p, R);
+}
+const fxMeshes = [];
+const ringGeo = new THREE.RingGeometry(.8, 1, 64), ballGeo = new THREE.SphereGeometry(1, 20, 14);
+function shockRing(p, R, dur, color = 0xfff1d0) {
+  const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+  m.rotation.x = -Math.PI / 2; m.position.set(p.x, groundY(p.x, p.z) + 1.5, p.z);
+  scene.add(m); fxMeshes.push({ m, t: 0, dur, upd: (u) => { m.scale.setScalar(1 + u * R); m.material.opacity = .9 * (1 - u); } });
+}
+function flashBall(p, R) {
+  const m = new THREE.Mesh(ballGeo, new THREE.MeshBasicMaterial({ color: 0xffe0a8, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  m.position.copy(p); scene.add(m);
+  fxMeshes.push({ m, t: 0, dur: .45, upd: (u) => { m.scale.setScalar(R * (.3 + u * 1.1)); m.material.opacity = 1 - u; } });
+}
+function updateFx(dt) {
+  for (let i = fxMeshes.length - 1; i >= 0; i--) {
+    const f = fxMeshes[i]; f.t += dt; const u = Math.min(1, f.t / f.dur); f.upd(u, dt);
+    if (u >= 1) { scene.remove(f.m); f.m.material.dispose(); fxMeshes.splice(i, 1); }
+  }
+  flashLight.intensity *= Math.exp(-dt * 7);
+}
+
+// ================================================================ sound (synthesised)
+let AC = null, master = null, soundOn = true, noiseBuf = null;
+function audio() {
+  if (!AC) {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = AC.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 6;
+    master = AC.createGain(); master.gain.value = .55; master.connect(comp); comp.connect(AC.destination);
+    noiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function noise(dur, f0, f1, gain, type = 'lowpass', delay = 0, q = .7) {
+  if (!soundOn) return;
+  const a = audio(), t = a.currentTime + delay;
+  const s = a.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+  const f = a.createBiquadFilter(); f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+  const gn = a.createGain(); gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(gain, t + .012); gn.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  s.connect(f); f.connect(gn); gn.connect(master); s.start(t, Math.random()); s.stop(t + dur + .05);
+}
+function tone(dur, f0, f1, gain, type = 'sine', delay = 0) {
+  if (!soundOn) return;
+  const a = audio(), t = a.currentTime + delay;
+  const o = a.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(10, f1), t + dur);
+  const gn = a.createGain(); gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(gain, t + .01); gn.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(gn); gn.connect(master); o.start(t); o.stop(t + dur + .05);
+}
+function boom(size = 1) {
+  noise(.5 + size * 1.6, 2600, 70, .9, 'lowpass');
+  tone(.4 + size * .9, 90, 28, .9 * Math.min(1, .5 + size * .4));
+  noise(.25, 6000, 900, .25, 'highpass');
+}
+function whack() { noise(.12, 2400, 600, .7, 'bandpass', 0, 2); tone(.18, 180, 60, .7, 'triangle'); noise(.7, 900, 150, .25, 'lowpass', .06); }
+function thud(k) { noise(.25, 500, 80, .25 * k, 'lowpass'); }
+let crumbleT = 0;
+function crumbleSound(n) {
+  if (performance.now() - crumbleT < 120) return; crumbleT = performance.now();
+  noise(1.2 + Math.min(n / 40, 1.5), 1300, 90, .45, 'lowpass');
+  for (let i = 0; i < 5; i++) noise(.08, 3000, 800, .18, 'bandpass', rand(0, .8), 3);
+}
+function rumble(dur, gain = .6) { noise(dur, 140, 45, gain, 'lowpass'); tone(dur, 38, 30, gain * .7, 'sine'); }
+let laserOsc = null;
+function laserSound(on) {
+  if (!soundOn && on) return;
+  if (on && !laserOsc) {
+    const a = audio(); const o1 = a.createOscillator(), o2 = a.createOscillator(), gn = a.createGain(), f = a.createBiquadFilter();
+    o1.type = 'sawtooth'; o1.frequency.value = 110; o2.type = 'square'; o2.frequency.value = 223;
+    f.type = 'lowpass'; f.frequency.value = 1400; gn.gain.value = .0001; gn.gain.exponentialRampToValueAtTime(.09, a.currentTime + .05);
+    o1.connect(f); o2.connect(f); f.connect(gn); gn.connect(master); o1.start(); o2.start();
+    laserOsc = { o1, o2, gn, f };
+  } else if (!on && laserOsc) {
+    const a = audio(), l = laserOsc; laserOsc = null;
+    l.gn.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .15); l.o1.stop(a.currentTime + .2); l.o2.stop(a.currentTime + .2);
+  }
+}
+
+// ================================================================ screen shake
+let trauma = 0, shakeT = 0;
+const shakeOff = new THREE.Vector3();
+function addShake(amount, at) {
+  const d = at ? camera.position.distanceTo(at) : 0;
+  trauma = Math.min(1.2, trauma + amount / (1 + d / 900));
+}
+
+// ================================================================ acts, score, style, undo history
+let act = null; const history = [];
+let score = 0, best = 0;
+try { best = +localStorage.getItem('smash-cbnu-best') || 0; } catch {}
+$('best').textContent = fmt(best);
+function beginAct(kind) {
+  act = { kind, pieces: [], trees: [], terr: new Map(), score: 0 };
+  history.push(act); if (history.length > 40) history.shift();
+  syncButtons();
+  return act;
+}
+const RANKS = [
+  { t: 0, l: 'D', n: '간보기' }, { t: 3e3, l: 'C', n: '슬슬 시동' }, { t: 1.2e4, l: 'B', n: '과제 스트레스' },
+  { t: 4e4, l: 'A', n: '중간고사 분노' }, { t: 1e5, l: 'S', n: '개신동 대지진' }, { t: 2.5e5, l: 'SS', n: '학사경고 각' }, { t: 6e5, l: 'SSS', n: '충북대 소멸' },
+];
+let style = 0, rankIdx = -1, rankShowT = 0;
+function scorePieces(vol, b) {
+  const mult = 1 + Math.max(0, rankIdx) * .2;
+  const pts = vol * 3 * mult;
+  score += pts; style += pts; if (act) act.score += pts;
+  rankShowT = 4;
+  if (b.campus && b.name && !b.down && b.lost > b.vol * .72) { b.down = true; fallen++; banner(`${b.short} 붕괴!`, b.name); }
+  else if (b.campus && !b.down && b.lost > b.vol * .72) { b.down = true; fallen++; }
+}
+function updateStyle(dt) {
+  style = Math.max(0, style * Math.exp(-dt * .45) - dt * 300);
+  let r = 0; for (let i = 0; i < RANKS.length; i++) if (style >= RANKS[i].t) r = i;
+  if (style < 400) r = -1;
+  if (r !== rankIdx) {
+    if (r > rankIdx && r >= 3) banner(RANKS[r].l + ' 랭크', RANKS[r].n);
+    rankIdx = r;
+  }
+  rankShowT -= dt;
+  const box = $('rank');
+  if (rankIdx < 0 || rankShowT < 0) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  $('rankL').textContent = RANKS[rankIdx].l; $('rankN').textContent = RANKS[rankIdx].n + ` · x${(1 + rankIdx * .2).toFixed(1)}`;
+  const nx = RANKS[rankIdx + 1];
+  $('rankBar').style.width = nx ? (100 * (style - RANKS[rankIdx].t) / (nx.t - RANKS[rankIdx].t)).toFixed(0) + '%' : '100%';
+}
+let hudT = 0;
+function updateHud(dt) {
+  hudT -= dt; if (hudT > 0) return; hudT = .1;
+  $('score').textContent = fmt(score);
+  let lost = 0; for (const b of B) if (b.campus) lost += Math.min(b.lost, b.vol);
+  $('pct').textContent = (100 * lost / campusVol).toFixed(1) + '%';
+  $('fallen').textContent = fallen;
+  if (score > best) { best = score; $('best').textContent = fmt(best); try { localStorage.setItem('smash-cbnu-best', Math.round(best)); } catch {} }
+}
+const bannerQ = []; let bannerBusy = false;
+function banner(text, sub = '') {
+  if (bannerQ.length > 3) bannerQ.shift();
+  bannerQ.push([text, sub]); if (!bannerBusy) nextBanner();
+}
+function nextBanner() {
+  const el = $('banner'); const it = bannerQ.shift();
+  if (!it) { bannerBusy = false; return; }
+  bannerBusy = true; el.innerHTML = `${it[0]}${it[1] ? `<small>${it[1]}</small>` : ''}`; el.classList.add('show');
+  setTimeout(() => { el.classList.remove('show'); setTimeout(nextBanner, 260); }, 1300);
+}
+function popup(text, p) {
+  tmpV.copy(p).project(camera); if (tmpV.z > 1) return;
+  const el = document.createElement('div'); el.className = 'pop'; el.textContent = text;
+  el.style.left = ((tmpV.x + 1) / 2 * innerWidth) + 'px'; el.style.top = ((1 - tmpV.y) / 2 * innerHeight) + 'px';
+  document.body.appendChild(el); setTimeout(() => el.remove(), 1200);
+}
+function actPopup(a, p, delay = 900) { setTimeout(() => { if (a.score > 1) popup('+' + fmt(a.score), p); }, delay); }
+
+function stopActive() {
+  bombs.length = 0; for (const f of flights) scene.remove(f.mesh); flights.length = 0;
+  quake = null; nuke = null; if (laser.active) laserEnd();
+  for (const s of swings) scene.remove(s.mesh); swings.length = 0;
+  for (const bm of bombMeshes) scene.remove(bm); bombMeshes.length = 0;
+}
+function restorePieces(list) {
+  const touched = new Set(), dirtyBatches = new Set();
+  for (const p of list) {
+    if (p.state === STATIC) continue;
+    if (p.state === DYN) { const n = dyn.indexOf(p); if (n >= 0) dyn.splice(n, 1); }
+    if (p.mesh) { scene.remove(p.mesh); p.mesh = null; }
+    if (p.state === RUBBLE) { const s = sleepers.indexOf(p); if (s >= 0) sleepers.splice(s, 1); if (p.batch) dirtyBatches.add(p.batch); }
+    p.state = STATIC; p.batch = null; p.act = null;
+    p.b.lost -= p.vol; touched.add(p.b);
+  }
+  for (const bt of dirtyBatches) rebuildBatch(bt);
+  for (const b of touched) {
+    b.lost = Math.max(0, b.lost); b.dirty = true;
+    if (b.down && b.lost <= b.vol * .72) { b.down = false; if (b.campus) fallen--; }
+  }
+}
+function recomputeRubble() {
+  RUB.fill(0);
+  const all = [...sleepers]; for (const bt of batches) all.push(...bt.pieces);
+  for (const p of all) {
+    if (!p.onGround) continue;
+    const top = p.pos.y + p.hr * .6;
+    for (let x = p.pos.x - p.hr * 1.2; x <= p.pos.x + p.hr * 1.2; x += RS) for (let z = p.pos.z - p.hr * 1.2; z <= p.pos.z + p.hr * 1.2; z += RS) {
+      const k = rubIdx(x, z); if (k >= 0) RUB[k] = Math.max(RUB[k], Math.min(top - groundY(x, z), 25));
+    }
+  }
+}
+function undo() {
+  const a = history.pop(); if (!a) return;
+  stopActive();
+  restorePieces(a.pieces);
+  for (const i of a.trees) setTree(i, true);
+  if (a.terr.size) { for (const [k, v] of a.terr) H[k] = v; refreshTerrain(); }
+  maxDepth = 0; for (let k = 0; k < H.length; k++) maxDepth = Math.max(maxDepth, H0[k] - H[k]); updateDepthHud();
+  groundOps = groundOps.filter((o) => o.act !== a); repaintGround();
+  score = Math.max(0, score - a.score); style = 0;
+  recomputeRubble();
+  act = history[history.length - 1] || null;
+  syncButtons(); toast('되돌렸습니다');
+}
+function resetAll() {
+  stopActive();
+  for (const p of dyn) if (p.mesh) scene.remove(p.mesh);
+  for (const p of sleepers) if (p.mesh) scene.remove(p.mesh);
+  for (const bt of batches) { scene.remove(bt.mesh); bt.mesh.geometry.dispose(); }
+  dyn.length = sleepers.length = batches.length = 0;
+  for (const b of B) {
+    if (b.pieces) for (const p of b.pieces) p.geo?.dispose();
+    b.pieces = null; b.at = null; b.lost = 0; b.down = false; b.sup = false; wholeMesh(b); b.dirty = false;
+  }
+  fallen = 0; H.set(H0); refreshTerrain(); RUB.fill(0); maxDepth = 0; updateDepthHud();
+  for (let i = 0; i < NT; i++) if (!treeAlive[i]) setTree(i, true);
+  groundOps = []; repaintGround();
+  score = 0; style = 0; history.length = 0; act = null; syncButtons(); toast('충북대를 전부 복구했습니다');
+}
+function syncButtons() { $('undo').disabled = !history.length; $('reset').disabled = !history.length; }
+function toast(t) { $('hint').textContent = t; $('hint').style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(syncHint, 1800); }
+
+// ================================================================ explosions (bomb, meteor)
+function blast(p, R, F, opts = {}) {
+  for (const b of buildingsNear(p.x, p.z, R * 1.3)) chunkify(b);
+  for (const b of buildingsNear(p.x, p.z, R * 1.3)) {
+    for (const pc of b.pieces) {
+      if (pc.state !== STATIC) continue;
+      tmpV.subVectors(pc.c, p); const d = tmpV.length();
+      if (d < R) {
+        const k = Math.pow(1 - d / R, .6);
+        tmpV.normalize(); tmpV.y = Math.max(tmpV.y, 0) + .35;
+        const s = F * k * rand(.6, 1.25);
+        detach(pc, tmpV.x * s, tmpV.y * s, tmpV.z * s, 1.5, opts.vaporize && d < R * .35);
+      } else if (d < R * 1.3 && Math.random() < .3) {
+        tmpV.normalize(); detach(pc, tmpV.x * F * .15, F * .1, tmpV.z * F * .15, .5);
+      }
+    }
+  }
+  killTrees(p.x, p.z, R * 1.1);
+  crater(p.x, p.z, opts.cr ?? R * .55, opts.cd ?? R * .22);
+  addOp({ t: 's', x: p.x, z: p.z, r: R * 1.35, a: .75 });
+  fireball(p, opts.fx ?? R);
+  addShake(opts.shake ?? clamp(R / 30, .25, 1), p);
+  boom(R / 25);
+}
+
+// ---------------------------------------------------------------- bomb (thrown from the camera)
+const bombs = [], bombMeshes = [];
+const bombGeo = new THREE.SphereGeometry(1.6, 14, 10), bombMat = new THREE.MeshStandardMaterial({ color: 0x1b1d22, roughness: .4, metalness: .3 });
+function throwBomb(p) {
+  const a = beginAct('bomb');
+  const start = camera.position.clone().add(tmpV.set(0, -6, 0)).lerp(p, .15);
+  const d = start.distanceTo(p);
+  const m = new THREE.Mesh(bombGeo, bombMat); m.castShadow = true; m.position.copy(start); scene.add(m); bombMeshes.push(m);
+  bombs.push({ m, a: start, b: p.clone(), t: 0, T: clamp(d / 420, .45, 1.1), arc: d * .12, act: a });
+  noise(.35, 600, 2400, .12, 'bandpass', 0, 2);
+}
+function updateBombs(dt) {
+  for (let i = bombs.length - 1; i >= 0; i--) {
+    const k = bombs[i]; k.t += dt; const u = Math.min(1, k.t / k.T);
+    k.m.position.lerpVectors(k.a, k.b, u); k.m.position.y += 4 * k.arc * u * (1 - u);
+    k.m.rotation.x += dt * 9;
+    fire.emit(k.m.position.x, k.m.position.y + 1.6, k.m.position.z, rand(-2, 2), rand(1, 4), rand(-2, 2), .25, 1.2, .3, 1, .8, .3, 1, .3, .1, 1, 1, 0);
+    if (u >= 1) {
+      scene.remove(k.m); bombMeshes.splice(bombMeshes.indexOf(k.m), 1); bombs.splice(i, 1);
+      const prev = act; act = k.act;
+      blast(k.b.clone().setY(k.b.y + 1), 19, 46);
+      actPopup(k.act, k.b);
+      act = prev === k.act ? act : prev;
+    }
+  }
+}
+
+// ---------------------------------------------------------------- meteor
+const flights = [];
+const rockGeo = new THREE.IcosahedronGeometry(7, 1);
+function launchMeteor(p) {
+  const a = beginAct('meteor');
+  const az = rand(0, Math.PI * 2), dir = new THREE.Vector3(Math.cos(az) * .8, 1, Math.sin(az) * .8).normalize();
+  const start = p.clone().addScaledVector(dir, 900);
+  const m = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: 0x3a2a22, emissive: 0xff5a1a, emissiveIntensity: 1.6, roughness: 1, flatShading: true }));
+  m.position.copy(start); scene.add(m);
+  flights.push({ mesh: m, a: start, b: p.clone(), t: 0, T: 1.5, act: a, kind: 'meteor' });
+  noise(1.5, 300, 1800, .25, 'bandpass', 0, 1.5);
+}
+function updateFlights(dt) {
+  for (let i = flights.length - 1; i >= 0; i--) {
+    const f = flights[i]; f.t += dt; const u = Math.min(1, f.t / f.T), e = u * u;
+    f.mesh.position.lerpVectors(f.a, f.b, e);
+    f.mesh.rotation.x += dt * 3; f.mesh.rotation.y += dt * 2;
+    const q = f.mesh.position, sz = f.kind === 'nuke' ? 2 : 6;
+    for (let n = 0; n < (f.kind === 'nuke' ? 1 : 6); n++) {
+      fire.emit(q.x + rand(-3, 3), q.y + rand(-3, 3), q.z + rand(-3, 3), rand(-4, 4), rand(-4, 4), rand(-4, 4), rand(.3, .7), sz * 2, sz * .6, 1, .85, .5, 1, .25, .05, 1, 1, 0);
+      if (f.kind === 'meteor') smoke.emit(q.x, q.y, q.z, rand(-2, 2), rand(-2, 2), rand(-2, 2), rand(1.5, 3), 6, 16, .25, .22, .2, .5, .48, .45, .55, .6, 1);
+    }
+    if (u >= 1) {
+      scene.remove(f.mesh); flights.splice(i, 1);
+      const prev = act; act = f.act;
+      if (f.kind === 'meteor') {
+        blast(f.b.clone().setY(f.b.y + 2), 46, 85, { cr: 30, cd: 16, shake: 1.1, fx: 48 });
+        actPopup(f.act, f.b, 1500);
+      } else detonateNuke(f.b);
+      act = prev === f.act ? act : prev;
+    }
+  }
+}
+
+// ---------------------------------------------------------------- bat
+let batSize = 1; const BAT = [{ r: 7, v: 60, n: '작게' }, { r: 12, v: 85, n: '보통' }, { r: 20, v: 115, n: '크게' }];
+const swings = [];
+const batGeo = (() => { const pts = []; for (let i = 0; i <= 12; i++) { const t = i / 12; pts.push(new THREE.Vector2(t < .12 ? .32 : .22 + .45 * Math.pow((t - .12) / .88, 1.6), t)); } pts.push(new THREE.Vector2(0, 1)); return new THREE.LatheGeometry(pts, 14); })();
+const batMat = new THREE.MeshStandardMaterial({ color: 0xc89a5e, roughness: .55 });
+function swingBat(p) {
+  const a = beginAct('bat');
+  const S = BAT[batSize];
+  const fwd = camera.getWorldDirection(new THREE.Vector3()); fwd.y = 0; fwd.normalize();
+  const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
+  const m = new THREE.Mesh(batGeo, batMat); m.castShadow = true;
+  const len = S.r * 2.6; m.scale.set(len * .2, len, len * .2);
+  const pivot = new THREE.Group(); pivot.position.copy(p).addScaledVector(right, -len * .9).addScaledVector(fwd, -S.r * .9); pivot.position.y = p.y + S.r * .5;
+  m.rotation.z = -Math.PI / 2; m.position.set(0, 0, 0);
+  const holder = new THREE.Group(); holder.add(m); pivot.add(holder); scene.add(pivot);
+  const baseYaw = Math.atan2(-right.z, right.x);
+  swings.push({ mesh: pivot, holder, t: 0, hit: false, p: p.clone(), fwd, right, S, act: a, baseYaw });
+  noise(.25, 400, 2600, .3, 'bandpass', 0, 1.4);
+}
+function updateSwings(dt) {
+  for (let i = swings.length - 1; i >= 0; i--) {
+    const s = swings[i]; s.t += dt;
+    const u = Math.min(1, s.t / .32), e = 1 - Math.pow(1 - u, 3);
+    // sweep from behind (-110 deg) through the target (0) and follow-through (+70)
+    s.holder.rotation.y = s.baseYaw + THREE.MathUtils.degToRad(-110 + 180 * e);
+    if (!s.hit && u > .27) {
+      s.hit = true;
+      const prev = act; act = s.act;
+      batHit(s);
+      act = prev === s.act ? act : prev;
+    }
+    if (s.t > .7) { scene.remove(s.mesh); swings.splice(i, 1); }
+  }
+}
+function batHit(s) {
+  const { p, fwd, S } = s;
+  for (const b of buildingsNear(p.x, p.z, S.r * 1.2)) chunkify(b);
+  let n = 0;
+  for (const b of buildingsNear(p.x, p.z, S.r * 1.2)) for (const pc of b.pieces) {
+    if (pc.state !== STATIC) continue;
+    const d = pc.c.distanceTo(p); if (d > S.r) continue;
+    const k = 1 - d / S.r * .5, v = S.v * k * rand(.75, 1.15);
+    detach(pc, fwd.x * v + s.right.x * rand(-.25, .25) * v, v * rand(.25, .55), fwd.z * v + s.right.z * rand(-.25, .25) * v, 3); n++;
+  }
+  killTrees(p.x, p.z, S.r * .8);
+  whack(); addShake(.35 + batSize * .15, p);
+  for (let i = 0; i < 20; i++) fire.emit(p.x, p.y + 2, p.z, fwd.x * rand(10, 40) + rand(-10, 10), rand(2, 18), fwd.z * rand(10, 40) + rand(-10, 10), rand(.2, .5), 1.4, .4, 1, .95, .7, 1, .6, .2, 1, 2, -10);
+  dustAt(p.x, p.y, p.z, S.r * .5, 8);
+  if (n) actPopup(s.act, p, 700);
+}
+
+// ---------------------------------------------------------------- laser (drag to cut)
+const laser = { active: false, last: null, act: null, beam: null, glow: null, t: 0 };
+const beamMat = new THREE.MeshBasicMaterial({ color: 0xff3b2f, transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false });
+const beamCore = new THREE.MeshBasicMaterial({ color: 0xfff2e8, transparent: true, opacity: .95, blending: THREE.AdditiveBlending, depthWrite: false });
+function laserStart(e) {
+  const h = pickAt(e.clientX, e.clientY); if (!h) return;
+  laser.active = true; laser.act = beginAct('laser'); laser.last = h.point.clone();
+  const g1 = new THREE.CylinderGeometry(1, 1, 1, 10, 1, true);
+  laser.beam = new THREE.Group();
+  const outer = new THREE.Mesh(g1, beamMat), inner = new THREE.Mesh(g1, beamCore); inner.scale.set(.35, 1, .35);
+  laser.beam.add(outer, inner); scene.add(laser.beam);
+  laserSound(true); laserMove(e);
+}
+function laserMove(e) {
+  const h = pickAt(e.clientX, e.clientY); if (!h) return;
+  const p = h.point;
+  const prev = act; act = laser.act;
+  laserCut(laser.last, p);
+  act = prev === laser.act ? act : prev;
+  laser.last = p.clone();
+  const topY = p.y + 700;
+  laser.beam.position.set(p.x, (p.y + topY) / 2, p.z); laser.beam.scale.set(1.6, topY - p.y, 1.6);
+}
+function laserCut(a, b) {
+  const len = Math.hypot(b.x - a.x, b.z - a.z), W = 1.8;
+  const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+  for (const bd of buildingsNear(mx, mz, len / 2 + 8)) {
+    let hitB = false;
+    for (const pc of (chunkify(bd), bd.pieces)) {
+      if (pc.state !== STATIC) continue;
+      // distance from segment to piece footprint box (2D)
+      const d = segBoxDist(a.x, a.z, b.x, b.z, pc.x0, pc.z0, pc.x1, pc.z1);
+      if (d > W) continue;
+      const nx = (b.z - a.z), nz = -(b.x - a.x), nl = Math.hypot(nx, nz) || 1;
+      const side = Math.sign((pc.c.x - a.x) * nx + (pc.c.z - a.z) * nz) || 1;
+      detach(pc, side * nx / nl * rand(2, 5), rand(0, 2), side * nz / nl * rand(2, 5), .4);
+      hitB = true;
+    }
+    if (hitB) { for (let i = 0; i < 6; i++) fire.emit(b.x, b.y + rand(0, 20), b.z, rand(-15, 15), rand(0, 20), rand(-15, 15), rand(.3, .8), 1.2, .3, 1, .9, .7, 1, .35, .1, 1, 1, -25); }
+  }
+  killTrees(b.x, b.z, 3);
+  if (len > .5) addOp({ t: 'c', x: 0, z: 0, r: 0, p: [[[a.x, a.z], [b.x, b.z]]], w: 2.2 });
+  for (let i = 0; i < 4; i++) fire.emit(b.x, b.y + .5, b.z, rand(-8, 8), rand(3, 14), rand(-8, 8), rand(.2, .6), 1.6, .4, 1, .95, .8, 1, .3, .05, 1, 1.5, -20);
+  smoke.emit(b.x, b.y + 1, b.z, rand(-1, 1), rand(2, 5), rand(-1, 1), rand(1, 2.5), 2, 7, .3, .27, .25, .5, .48, .46, .45, .8, 1);
+}
+function segBoxDist(ax, az, bx, bz, x0, z0, x1, z1) {
+  // sample the segment; cheap and good enough at these sizes
+  const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 1.5));
+  let best = Infinity;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, x = ax + (bx - ax) * t, z = az + (bz - az) * t;
+    const dx = Math.max(x0 - x, 0, x - x1), dz = Math.max(z0 - z, 0, z - z1);
+    best = Math.min(best, Math.hypot(dx, dz));
+  }
+  return best;
+}
+function laserEnd() {
+  laser.active = false; laserSound(false);
+  if (laser.beam) { scene.remove(laser.beam); laser.beam = null; }
+  if (laser.act) { if (!laser.act.pieces.length && !laser.act.trees.length && !laser.act.terr.size) { history.splice(history.indexOf(laser.act), 1); groundOps = groundOps.filter((o) => o.act !== laser.act); syncButtons(); } else if (laser.last) actPopup(laser.act, laser.last, 200); }
+  laser.act = null;
+}
+function updateLaser(dt) {
+  if (!laser.active || !laser.beam) return;
+  laser.t += dt; laser.beam.children[0].material.opacity = .65 + .3 * Math.sin(laser.t * 40);
+  if (laser.last) { addShake(dt * .25); }
+}
+
+// ---------------------------------------------------------------- earthquake
+let quakeMag = 1; const QM = [{ m: 5, r: 220, p: .03, d: 3.5 }, { m: 7, r: 480, p: .05, d: 5 }, { m: 9, r: 2000, p: .1, d: 7 }];
+let quake = null;
+function startQuake(p) {
+  const a = beginAct('quake');
+  const Q = QM[quakeMag];
+  const list = [...buildingsNear(p.x, p.z, Q.r)].sort((x, y) => Math.hypot(x.cx - p.x, x.cz - p.z) - Math.hypot(y.cx - p.x, y.cz - p.z));
+  quake = { p: p.clone(), Q, t: 0, tick: 0, list, chunkI: 0, act: a };
+  rumble(Q.d + 1, .5 + quakeMag * .2);
+  banner(`규모 ${Q.m}.0 지진`, '진앙: 마우스로 찍은 곳');
+  // ground cracks radiating from the epicentre
+  const paths = [];
+  for (let i = 0; i < 6 + quakeMag * 4; i++) {
+    let x = p.x, z = p.z, ang = rand(0, Math.PI * 2); const path = [[x, z]];
+    const len = Q.r * rand(.15, .35) * (quakeMag + 1) / 3;
+    for (let s = 0; s < 14; s++) { ang += rand(-.5, .5); x += Math.cos(ang) * len / 14; z += Math.sin(ang) * len / 14; path.push([x, z]); }
+    paths.push(path);
+  }
+  addOp({ t: 'c', x: 0, z: 0, r: 0, p: paths, w: 1.2 + quakeMag * .9 });
+}
+function updateQuake(dt) {
+  if (!quake) return;
+  const q = quake; q.t += dt;
+  // chunkify a few buildings per frame to spread the cost
+  const until = performance.now() + 7;
+  while (q.chunkI < q.list.length && performance.now() < until) chunkify(q.list[q.chunkI++]);
+  const env = Math.sin(Math.min(1, q.t / q.Q.d) * Math.PI);
+  trauma = Math.max(trauma, .35 + env * .45 * (quakeMag + 1) / 2);
+  q.tick -= dt;
+  if (q.tick <= 0 && q.t < q.Q.d) {
+    q.tick = .22;
+    const prev = act; act = q.act;
+    for (let n = 0; n < q.chunkI; n++) {
+      const b = q.list[n]; if (!b.pieces) continue;
+      const d = Math.hypot(b.cx - q.p.x, b.cz - q.p.z), fall = Math.max(0, 1 - d / q.Q.r);
+      const ns = b.grid.ns;
+      for (const pc of b.pieces) {
+        if (pc.state !== STATIC) continue;
+        const pr = q.Q.p * env * fall * (.35 + (pc.k + 1) / ns) * (ns > 3 ? 1.4 : 1);
+        if (Math.random() < pr * .45) detach(pc, rand(-4, 4), rand(0, 2), rand(-4, 4), .7);
+      }
+    }
+    act = prev === q.act ? act : prev;
+  }
+  if (q.t > q.Q.d + .5) { actPopup(q.act, q.p, 0); quake = null; }
+}
+
+// ---------------------------------------------------------------- nuke
+let nuke = null, flashA = 0;
+function launchNuke(p) {
+  const a = beginAct('nuke');
+  const start = p.clone().add(tmpV.set(0, 1100, 0));
+  const g1 = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(3, 12, 4, 10), new THREE.MeshStandardMaterial({ color: 0x40454d, metalness: .5, roughness: .4 }));
+  const fins = new THREE.Mesh(new THREE.ConeGeometry(4.5, 5, 4), new THREE.MeshStandardMaterial({ color: 0xc2a23a }));
+  fins.position.y = 9; g1.add(body, fins); g1.position.copy(start); scene.add(g1);
+  flights.push({ mesh: g1, a: start, b: p.clone(), t: 0, T: 2.1, act: a, kind: 'nuke' });
+  noise(2.1, 200, 2200, .2, 'bandpass', 0, 1.2);
+  // zoom out so the whole blast is visible
+  const dist = camera.position.distanceTo(controls.target);
+  if (dist < 1100) flyTo(p, tmpV2.copy(camera.position).sub(controls.target).setLength(1300).add(p), 1.6);
+}
+function detonateNuke(p) {
+  const R = 760;
+  const list = [...buildingsNear(p.x, p.z, R)].map((b) => ({ b, d: Math.hypot(b.cx - p.x, b.cz - p.z) })).sort((a, c) => a.d - c.d);
+  nuke = { p: p.clone(), t: 0, R, list, i: 0, act, wave: 0 };
+  flashA = 1;
+  boom(4); rumble(6, 1); noise(4, 900, 40, .8, 'lowpass', .3);
+  addShake(1.6);
+  crater(p.x, p.z, 85, 34);
+  addOp({ t: 's', x: p.x, z: p.z, r: 420, a: .55 }); addOp({ t: 's', x: p.x, z: p.z, r: 160, a: .9 });
+  fireball(p.clone().setY(p.y + 25), 110, { buoy: 6 });
+  shockRing(p, 900, 3.2, 0xfff4e0);
+  flashLight.intensity = 3e7; flashLight.distance = 3000; flashLight.position.set(p.x, p.y + 200, p.z);
+  banner('충북대 소멸', '핵폭탄 투하');
+}
+function updateNuke(dt) {
+  if (!nuke) return;
+  const n = nuke; n.t += dt; n.wave = n.t * 260;
+  const prev = act; act = n.act;
+  // mushroom cloud
+  if (n.t < 5.5) {
+    const capY = n.p.y + Math.min(n.t * 70, 330);
+    for (let i = 0; i < 10; i++) {
+      smoke.emit(n.p.x + rand(-25, 25), n.p.y + rand(0, capY - n.p.y), n.p.z + rand(-25, 25), rand(-4, 4), rand(8, 20), rand(-4, 4), rand(4, 7), 30, 70, .35, .22, .14, .45, .42, .4, .55, .5, 2);
+      const a2 = rand(0, Math.PI * 2), r2 = rand(0, 60 + n.t * 25);
+      smoke.emit(n.p.x + Math.cos(a2) * r2, capY + rand(-20, 30), n.p.z + Math.sin(a2) * r2, Math.cos(a2) * 12, rand(2, 8), Math.sin(a2) * 12, rand(4, 8), 45, 110, .5, .25, .1, .5, .46, .42, .6, .4, 1);
+      fire.emit(n.p.x + rand(-20, 20), capY + rand(-15, 15), n.p.z + rand(-20, 20), rand(-6, 6), rand(0, 6), rand(-6, 6), rand(.6, 1.2), 40, 60, 1, .7, .3, .8, .2, .05, .7, .5, 0);
+    }
+    // ground dust ring travelling with the shock wave
+    for (let i = 0; i < 8 && n.wave < n.R; i++) {
+      const a2 = rand(0, Math.PI * 2), x = n.p.x + Math.cos(a2) * n.wave, z = n.p.z + Math.sin(a2) * n.wave;
+      smoke.emit(x, groundY(x, z) + 4, z, Math.cos(a2) * 40, rand(3, 10), Math.sin(a2) * 40, rand(2, 4), 20, 55, .55, .5, .44, .6, .57, .52, .55, 1.2, 1);
+    }
+  }
+  const until = performance.now() + 9;
+  while (n.i < n.list.length && n.list[n.i].d < n.wave && performance.now() < until) {
+    const { b } = n.list[n.i++]; chunkify(b);
+    for (const pc of b.pieces) {
+      if (pc.state !== STATIC) continue;
+      const d = Math.hypot(pc.c.x - n.p.x, pc.c.z - n.p.z), k = 1 - d / n.R;
+      if (k <= 0) continue;
+      if (d < 140) { detach(pc, 0, 0, 0, 0, true); continue; }
+      const ns = b.grid.ns;
+      if (Math.random() > k * 1.6 * (.5 + (pc.k + 1) / ns)) continue;
+      const s = 120 * Math.pow(k, 1.2) * rand(.6, 1.2);
+      detach(pc, (pc.c.x - n.p.x) / d * s, s * rand(.15, .4), (pc.c.z - n.p.z) / d * s, 2);
+    }
+  }
+  killTrees(n.p.x, n.p.z, Math.min(n.wave, n.R * .8));
+  act = prev === n.act ? act : prev;
+  if (n.t > 7 && n.i >= n.list.length) { actPopup(n.act, n.p, 0); nuke = null; }
+}
+
+// ================================================================ picking and input
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function rayGround(o, d) {
+  let t = 0, prevH = o.y - groundY(o.x, o.z);
+  if (prevH < 0) return null;
+  for (let it = 0; it < 4000 && t < 9000; it++) {
+    const step = clamp(prevH * .5, 1.5, 40), t2 = t + step;
+    const x = o.x + d.x * t2, y = o.y + d.y * t2, z = o.z + d.z * t2, h = y - groundY(x, z);
+    if (h < 0) {
+      let a = t, b = t2;
+      for (let r = 0; r < 18; r++) { const m = (a + b) / 2, hm = o.y + d.y * m - groundY(o.x + d.x * m, o.z + d.z * m); if (hm < 0) b = m; else a = m; }
+      return { point: new THREE.Vector3(o.x + d.x * b, o.y + d.y * b, o.z + d.z * b), dist: b, b: null };
+    }
+    t = t2; prevH = h; if (y < BASE - 400) break;
+  }
+  return null;
+}
+function pickAt(cx, cy) {
+  ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(pickables, false);
+  const gh = rayGround(ray.ray.origin, ray.ray.direction);
+  if (hits.length && (!gh || hits[0].distance < gh.dist)) return { point: hits[0].point, dist: hits[0].distance, b: hits[0].object.userData.b };
+  return gh;
+}
+let tool = 'bomb';
+function useTool(cx, cy) {
+  const h = pickAt(cx, cy); if (!h) return;
+  audio();
+  const p = h.point.clone();
+  if (tool === 'bomb') throwBomb(p);
+  else if (tool === 'bat') swingBat(p);
+  else if (tool === 'meteor') launchMeteor(p);
+  else if (tool === 'quake') startQuake(p);
+  else if (tool === 'nuke') launchNuke(p);
+}
+const cvs = renderer.domElement; let down = null;
+cvs.addEventListener('contextmenu', (e) => e.preventDefault());
+cvs.addEventListener('pointerdown', (e) => {
+  down = { x: e.clientX, y: e.clientY, t: performance.now(), b: e.button };
+  if (tool === 'laser' && e.button === 0 && e.isPrimary) { try { cvs.setPointerCapture(e.pointerId); } catch {} laserStart(e); }
+});
+cvs.addEventListener('pointermove', (e) => {
+  if (laser.active) { laserMove(e); return; }
+  moveReticle(e.clientX, e.clientY);
+});
+cvs.addEventListener('pointerup', (e) => {
+  if (laser.active) { laserEnd(); down = null; return; }
+  if (!down) return;
+  const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dt = performance.now() - down.t;
+  if (down.b === 0 && moved < 7 && dt < 600 && tool !== 'laser' && !flying) useTool(e.clientX, e.clientY);
+  down = null;
+});
+cvs.addEventListener('pointerleave', () => { $('reticle').style.display = 'none'; });
+let retT = 0;
+function moveReticle(x, y) {
+  const r = $('reticle');
+  if (matchMedia('(pointer: coarse)').matches) { r.style.display = 'none'; return; }
+  r.style.display = 'block'; r.style.transform = `translate(${x}px,${y}px)`;
+  const now = performance.now(); if (now - retT < 80) return; retT = now;
+  const h = pickAt(x, y);
+  r.style.borderColor = h?.b ? '#e5383b' : '#ffd166';
+  cvs.title = h?.b?.name || '';
+}
+
+// ================================================================ labels
+const labelEls = [];
+function buildLabels() {
+  const box = $('labels');
+  for (const b of B) {
+    if (!b.campus || !b.name) continue;
+    const el = document.createElement('div'); el.className = 'lbl'; el.textContent = b.name; el.style.display = 'none';
+    box.appendChild(el); labelEls.push({ b, el, vis: false });
+  }
+}
+let labelsOn = true, labelT = 0;
+const placed = [];
+function updateLabels(dt) {
+  const dist = camera.position.distanceTo(controls.target), maxD = Math.max(700, dist * 1.15);
+  const cand = [];
+  for (const L of labelEls) {
+    L.want = false;
+    if (!labelsOn || L.b.down) continue;
+    tmpV.set(L.b.cx, L.b.top + 4, L.b.cz);
+    const cd = camera.position.distanceTo(tmpV); if (cd > maxD) continue;
+    tmpV.project(camera);
+    if (tmpV.z > 1 || Math.abs(tmpV.x) > 1.05 || Math.abs(tmpV.y) > 1.05) continue;
+    L.sx = (tmpV.x + 1) / 2 * innerWidth; L.sy = (1 - tmpV.y) / 2 * innerHeight; L.cd = cd;
+    cand.push(L);
+  }
+  cand.sort((a, b) => a.cd - b.cd);
+  placed.length = 0;
+  for (const L of cand) {
+    const w = L.b.name.length * 7.2 + 14, h = 20, x0 = L.sx - w / 2, y0 = L.sy - h;
+    if (placed.some((r) => x0 < r[2] && x0 + w > r[0] && y0 < r[3] && y0 + h > r[1])) continue;
+    placed.push([x0 - 4, y0 - 3, x0 + w + 4, y0 + h + 3]); L.want = true;
+    L.el.style.transform = `translate(${L.sx.toFixed(1)}px,${L.sy.toFixed(1)}px) translate(-50%,-100%)`;
+  }
+  for (const L of labelEls) if (L.want !== L.vis) { L.el.style.display = L.want ? 'block' : 'none'; L.vis = L.want; }
+}
+
+// ================================================================ camera moves
+let CC = new THREE.Vector3(), HOME_POS = new THREE.Vector3(), flying = null;
+function initViews() {
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (const r of D.campus) for (const [x, z] of r) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+  CC.set((x0 + x1) / 2, 0, (z0 + z1) / 2); CC.y = groundY(CC.x, CC.z);
+  HOME_POS.set(CC.x + 380, CC.y + 620, CC.z + 760);
+}
+function flyTo(target, pos, dur = 1.1) {
+  flying = { t: 0, dur, t0: controls.target.clone(), p0: camera.position.clone(), t1: target.clone(), p1: pos.clone() };
+}
+function updateFly(dt) {
+  if (!flying) return;
+  const f = flying; f.t += dt; const u = Math.min(1, f.t / f.dur), e = u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  controls.target.lerpVectors(f.t0, f.t1, e); camera.position.lerpVectors(f.p0, f.p1, e);
+  if (u >= 1) flying = null;
+}
+const homeView = () => flyTo(CC, HOME_POS);
+const topView = () => flyTo(CC, tmpV.copy(CC).add(tmpV2.set(0, 1650, 1)));
+function northUp() {
+  const off = tmpV.copy(camera.position).sub(controls.target);
+  const hd = Math.hypot(off.x, off.z) || 1;
+  flyTo(controls.target, tmpV2.set(controls.target.x, camera.position.y, controls.target.z + hd), .7);
+}
+
+// ================================================================ night
+let night = false;
+function setNight(on) {
+  night = on; U.uNight.value = on ? 1 : 0;
+  $('tNight').classList.toggle('on', on);
+  if (on) {
+    setSun(-7, 35); SU.turbidity.value = 2; SU.rayleigh.value = .4;
+    hemi.intensity = .18; hemi.color.set(0x7f94c9); hemi.groundColor.set(0x1d1a16);
+    sun.color.set(0x9db4ff); sun.intensity = .35; renderer.toneMappingExposure = .75;
+    scene.fog.color.set(0x0c1220); stars.visible = true;
+  } else {
+    setSun(40, 35); SU.turbidity.value = 6; SU.rayleigh.value = 1.6; SU.mieCoefficient.value = .004; SU.mieDirectionalG.value = .8;
+    hemi.intensity = 1.15; hemi.color.set(0xdfe9ff); hemi.groundColor.set(0x6b5d48);
+    sun.color.set(0xfff0d8); sun.intensity = 2.6; renderer.toneMappingExposure = .78;
+    scene.fog.color.set(0xc4d6e6); stars.visible = false;
+  }
+}
+
+// ================================================================ UI wiring
+const HINTS = {
+  bomb: '건물이나 땅을 클릭하면 폭탄을 던집니다',
+  bat: '클릭한 곳을 배트로 날려 버립니다 · 날아간 조각이 다른 건물도 부숩니다',
+  laser: '왼쪽 드래그로 자릅니다 · 회전은 오른쪽 드래그',
+  meteor: '클릭한 곳에 운석이 떨어집니다',
+  quake: '클릭한 곳이 진앙입니다 · 규모를 고르세요',
+  nuke: '클릭하면 핵폭탄이 떨어집니다 · 캠퍼스 대부분이 사라집니다',
+};
+function syncHint() { $('hint').textContent = HINTS[tool]; }
+function setTool(t) {
+  tool = t;
+  document.querySelectorAll('.tool').forEach((b) => b.classList.toggle('on', b.dataset.tool === t));
+  const o = $('opts');
+  if (t === 'bat') o.innerHTML = '<span class="lab">크기</span>' + BAT.map((s, i) => `<button class="seg ${i === batSize ? 'on' : ''}" data-i="${i}">${s.n}</button>`).join('');
+  else if (t === 'quake') o.innerHTML = '<span class="lab">규모</span>' + QM.map((s, i) => `<button class="seg ${i === quakeMag ? 'on' : ''}" data-i="${i}">${s.m}.0</button>`).join('');
+  else o.innerHTML = '';
+  o.querySelectorAll('.seg').forEach((b) => b.onclick = () => {
+    if (t === 'bat') batSize = +b.dataset.i; else quakeMag = +b.dataset.i;
+    o.querySelectorAll('.seg').forEach((x) => x.classList.toggle('on', x === b));
+  });
+  if (t === 'laser') { controls.mouseButtons.LEFT = -1; controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE; controls.touches.ONE = -1; }
+  else { controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE; controls.mouseButtons.RIGHT = THREE.MOUSE.PAN; controls.touches.ONE = THREE.TOUCH.ROTATE; }
+  syncHint();
+}
+document.querySelectorAll('.tool').forEach((b) => b.onclick = () => setTool(b.dataset.tool));
+$('undo').onclick = undo;
+$('reset').onclick = resetAll;
+$('shot').onclick = () => {
+  renderFrame(0);
+  renderer.domElement.toBlob((blob) => {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `smash-cbnu-${Date.now()}.png`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+  toast('스크린샷을 저장했습니다');
+};
+$('tLabels').onclick = () => { labelsOn = !labelsOn; $('tLabels').classList.toggle('on', labelsOn); };
+$('tSound').onclick = () => { soundOn = !soundOn; $('tSound').classList.toggle('on', soundOn); if (!soundOn) laserSound(false); };
+$('tHome').onclick = homeView;
+$('tTop').onclick = topView;
+$('tNight').onclick = () => setNight(!night);
+$('compass').onclick = northUp;
+addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); undo(); return; }
+  const tools = ['bomb', 'bat', 'laser', 'meteor', 'quake', 'nuke'];
+  if (k >= '1' && k <= '6') setTool(tools[+k - 1]);
+  else if (k === 'n') northUp();
+  else if (k === 'h') homeView();
+  else if (k === 't') topView();
+  else if (k === 'l') $('tLabels').click();
+  else if (k === 'm') $('tSound').click();
+  else if (k === 'escape' && laser.active) laserEnd();
+});
+function resize() {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  const s = innerHeight * renderer.getPixelRatio() / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+  fire.mat.uniforms.uScale.value = smoke.mat.uniforms.uScale.value = s;
+}
+addEventListener('resize', resize);
+
+// ================================================================ loop
+const clock = new THREE.Clock();
+function renderFrame(dt) {
+  // camera shake: smooth noise on top of the orbit camera
+  shakeT += dt;
+  const amp = trauma * trauma * camera.position.distanceTo(controls.target) * .012;
+  shakeOff.set(Math.sin(shakeT * 37.1) + Math.sin(shakeT * 23.7) * .6, Math.sin(shakeT * 41.3) * .7 + Math.sin(shakeT * 17.9) * .5, Math.sin(shakeT * 29.3) + Math.sin(shakeT * 13.1) * .5).multiplyScalar(amp);
+  camera.position.add(shakeOff);
+  renderer.render(scene, camera);
+  camera.position.sub(shakeOff);
+}
+function frame() {
+  requestAnimationFrame(frame);
+  update(Math.min(clock.getDelta(), 1 / 20));
+}
+function update(dt) {
+  if (flying) updateFly(dt); else controls.update();
+  updateBombs(dt); updateFlights(dt); updateSwings(dt); updateLaser(dt); updateQuake(dt); updateNuke(dt);
+  stepPieces(dt / 2); stepPieces(dt / 2);
+  for (const b of B) if (b.sup) computeSupport(b);
+  const rb = performance.now() + 7; let rn = 0;
+  for (const b of B) if (b.dirty && (rn++ < 2 || performance.now() < rb)) rebuildStatic(b);
+  mergeT += dt; mergeSleepers(false);
+  fire.update(dt); smoke.update(dt); updateFx(dt);
+  updateStyle(dt); updateHud(dt); updateLabels(dt);
+  // keep the shadow camera around what we look at
+  sun.target.position.copy(controls.target);
+  sun.position.copy(controls.target).addScaledVector(night ? tmpV.set(.3, 1, .2).normalize() : sunDir, 1200);
+  trauma = Math.max(0, trauma - dt * 1.1);
+  if (flashA > .002) { flashA *= Math.exp(-dt * 1.8); $('flash').style.opacity = flashA < .01 ? 0 : flashA.toFixed(3); }
+  renderFrame(dt);
+}
+
+// ================================================================ boot
+(async () => {
+  const msg = $('loadMsg');
+  msg.textContent = '땅을 고르는 중…'; await nextFrame();
+  paintGround(); buildTerrain();
+  msg.textContent = '나무를 심는 중…'; await nextFrame();
+  buildTrees();
+  msg.textContent = `건물 ${D.buildings.length}동을 세우는 중…`; await nextFrame();
+  buildBuildings(); buildLabels();
+  initViews();
+  camera.position.copy(HOME_POS).add(tmpV.set(300, 500, 400)); controls.target.copy(CC);
+  setNight(false); setTool('bomb'); resize();
+  // prewarm: compile the effect/debris shaders once so the first explosion doesn't hitch
+  { const far = new THREE.Vector3(TX0 - 2000, -500, TZ0 - 2000); flashBall(far, 1); shockRing(far, 1, .01);
+    fire.emit(far.x, far.y, far.z, 0, 0, 0, .01, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0); smoke.emit(far.x, far.y, far.z, 0, 0, 0, .01, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
+    renderer.compile(scene, camera); }
+  $('loading').style.display = 'none'; $('intro').style.display = 'grid';
+  frame();
+  $('go').onclick = () => { $('intro').style.display = 'none'; audio(); homeView(); banner('충북대를 부셔', '시험기간 스트레스 해소'); };
+  // debug hook: advance the simulation without requestAnimationFrame (hidden tabs pause rAF)
+  window.__smash = { B, dyn, history, scene, camera, controls, setTool, useTool, pickAt, chunkify, blast, refreshTerrain, tick: (sec) => { for (let t = 0; t < sec; t += 1 / 30) update(1 / 30); } };
+})();
+</script>
+</body>
+</html>
