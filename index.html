@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SMASH CBNU · 충북대 부수기</title>
 <meta name="description" content="충북대학교를 3D로 부수는 시험기간 스트레스 해소 게임 (비공식 팬 게임)">
+<meta name="theme-color" content="#0b0d12">
+<!-- link previews (KakaoTalk, Facebook, Discord, X) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SMASH CBNU">
+<meta property="og:title" content="SMASH CBNU — 충북대 부수기 게임">
+<meta property="og:description" content="충북대를 부셔 (시험기간 스트레스 해소)">
+<meta property="og:url" content="https://jjjjjjong.github.io/SMASH-CBNU/">
+<meta property="og:image" content="https://jjjjjjong.github.io/SMASH-CBNU/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="부서지는 충북대 캠퍼스 위에 SMASH CBNU 제목">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SMASH CBNU — 충북대 부수기 게임">
+<meta name="twitter:description" content="충북대를 부셔 (시험기간 스트레스 해소)">
+<meta name="twitter:image" content="https://jjjjjjong.github.io/SMASH-CBNU/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e5383b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,Arial' font-weight='900' font-size='19' text-anchor='middle' fill='%23fff'%3ES%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
@@ -92,12 +109,33 @@ body.cine #panel,body.cine #labels,body.cine #depth{opacity:0;pointer-events:non
 #intro .go{margin-top:10px;padding:12px 30px;border:0;border-radius:12px;background:var(--acc);color:#fff;font-weight:800;font-size:16px}
 #intro .keys{font-size:12px;color:var(--sub);margin-top:14px;line-height:1.7}
 #loading p{font-size:14px;color:#cfd3da}
+.keys .touch{display:none}
+@media (pointer:coarse){ .keys .desk{display:none} .keys .touch{display:inline} }
+/* phones: tools become a bar along the bottom, score stays top right, credits top left */
 @media (max-width:700px){
-  #panel{width:200px;padding:8px;top:8px;left:8px}
-  .tool .d,.tool kbd{display:none}
-  .brand b{font-size:19px}
+  #panel{left:8px;right:8px;top:auto;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;padding:7px;max-height:none}
+  .brand,.tool .d,.tool kbd,.btn small{display:none}
+  .tools{grid-template-columns:repeat(6,1fr);gap:4px}
+  .tool{padding:6px 0 5px;border-radius:9px}
+  .tool svg{width:19px;height:19px;margin-bottom:2px}
+  .tool .n{font-size:11.5px}
+  #opts{margin-top:6px;min-height:0}
+  #opts:empty{display:none}
+  .row{margin-top:6px;gap:4px}
+  .btn{padding:7px 2px;font-size:12px}
+  .toggles{flex-wrap:nowrap;overflow-x:auto;margin-top:6px;gap:4px;scrollbar-width:none}
+  .tg{flex:none;padding:5px 8px;font-size:11.5px}
+  #hud{top:calc(8px + env(safe-area-inset-top));right:8px;gap:4px}
+  #scoreBox{padding:5px 10px}
+  #score{font-size:22px}
+  #stat{padding:5px 9px;font-size:10.5px;line-height:1.45}
+  #rank{min-width:110px;padding:5px 10px}
+  #rank .l{font-size:26px}
+  footer{top:calc(8px + env(safe-area-inset-top));bottom:auto;left:8px;max-width:calc(100% - 200px);font-size:8.5px;line-height:1.35}
+  #compass{bottom:calc(var(--panelH, 190px) + 14px);right:10px;width:40px;height:40px}
+  #banner{top:24%}
+  .lbl{font-size:10px;padding:1px 5px}
   #hint,#depth{display:none !important}
-  footer{font-size:9px;right:60px}
 }
 </style>
 <script type="importmap">
@@ -151,9 +189,12 @@ body.cine #panel,body.cine #labels,body.cine #depth{opacity:0;pointer-events:non
   <h1>SMASH <i>CBNU</i></h1>
   <p><b>충북대를 부셔</b> — 중간고사 스트레스 해소용<br>개신동 캠퍼스 건물 156동과 주변 건물을 3D로 부숴 보세요.</p>
   <button class="go" id="go">부수러 가기</button>
-  <div class="keys">클릭: 도구 사용 · 드래그: 회전 · 우클릭 드래그: 이동 · 휠: 확대<br>1~6 도구 · Ctrl+Z 되돌리기 · N 북쪽 · H 처음 시점</div>
+  <div class="keys"><span class="desk">클릭: 도구 사용 · 드래그: 회전 · 우클릭 드래그: 이동 · 휠: 확대<br>1~6 도구 · Ctrl+Z 되돌리기 · N 북쪽 · H 처음 시점</span><span class="touch">탭: 도구 사용 · 한 손가락: 회전 · 두 손가락: 이동·확대<br>레이저는 한 손가락으로 그어서 자릅니다</span></div>
 </div></div>
 
+<script>
+new ResizeObserver(([e]) => document.documentElement.style.setProperty('--panelH', e.target.offsetHeight + 'px')).observe(document.getElementById('panel'));
+</script>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -195,7 +236,8 @@ const landY = (x, z) => { const k = rubIdx(x, z); return groundY(x, z) + (k < 0 
 
 // ================================================================ renderer, sky, light
 const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 2, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+const COARSE = matchMedia('(pointer:coarse)').matches;
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, COARSE ? 1.5 : 2));   // phones: fewer pixels, steadier frame rate
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.6;
@@ -1429,8 +1471,8 @@ function launchMeteor(p) {
       blast(p.clone().setY(p.y + 2), 60, { power: 1.7, fx: 2.4, cr: 1.1, cd: 2.2, big: 2.2, shake: 1 });
       flashA = Math.max(flashA, .55);
       fireSprite(p.clone().setY(p.y + 8), 10, 100, 1.6);   // the impact fireball swells over the crater
-      const near = B.filter((b) => b.n).sort((x, y) => Math.hypot(x.cx - p.x, x.cz - p.z) - Math.hypot(y.cx - p.x, y.cz - p.z))[0];
-      banner('운석 충돌', `충돌 지점: ${near ? near.n + ' 근처' : '캠퍼스 한복판'}`);
+      const near = B.filter((b) => b.name).sort((x, y) => Math.hypot(x.cx - p.x, x.cz - p.z) - Math.hypot(y.cx - p.x, y.cz - p.z))[0];
+      banner('운석 충돌', `충돌 지점: ${near ? (near.short || near.name) + ' 근처' : '캠퍼스 한복판'}`);
       actPopup(a, p, 1500);
       act = prev === a ? act : prev;
     },
