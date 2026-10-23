@@ -20,13 +20,14 @@
 
 ## 로컬 실행
 
-`index.html`을 브라우저로 열면 됩니다 (three.js와 글꼴을 CDN에서 불러오므로 인터넷 연결 필요). 열리지 않으면 이 폴더에서:
+이 폴더의 `run.bat`을 더블클릭하면 서버가 켜지고 브라우저에서 게임이 열립니다 (http://localhost:8770).
+three.js와 글꼴을 CDN에서 불러오므로 인터넷 연결이 필요합니다.
+
+직접 서버를 켤 때는 **이 폴더 안에서** 실행해야 합니다 (상위 폴더에서 켜면 폴더 목록만 보입니다):
 
 ```bash
-python -m http.server 8765
+python -m http.server 8770
 ```
-
-후 http://localhost:8765 접속.
 
 ## 데이터 출처
 
